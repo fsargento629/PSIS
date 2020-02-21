@@ -1,0 +1,8 @@
+Compilar libraries:
+	gcc -Wall -fPIC -c lib2.c
+	gcc -shared -Wl,-soname,lib2.so. -o lib2.so   lib2.o
+
+
+Compilar ficheiro:
+	gcc -o teste prog2.c -ldl
+

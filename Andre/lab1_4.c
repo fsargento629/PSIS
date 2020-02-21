@@ -20,4 +20,5 @@ int main(){
                         printf("%d ", random_numb);
     }   
 
+    exit(0);
 }
