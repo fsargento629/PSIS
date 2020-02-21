@@ -48,8 +48,7 @@ int main(){
             fputs(error, stderr);
             exit(1);
         }
-
-
+	
 	/*load func_2 from loaded library */
 
 	func2 = dlsym(handle, "func_2");
