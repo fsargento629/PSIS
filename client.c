@@ -4,12 +4,7 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 
-#include "UI/UI_library.h"
-//gcc teste.c UI_library.c -o teste-UI -lSDL2 -lSDL2_image
 
+setup_message setup_comm(char* server_address){
 
-int main(int argc,char*argv[]){
-
-    printf("Client\n");
-    return 0;
 }
