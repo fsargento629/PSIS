@@ -19,6 +19,7 @@ int main(int argc , char* argv[]){
     Uint32 Event_screen_refresh;
 	SDL_Event event;
 	int done = 0,board_size[2];
+	int x,y;
 	pthread_t sock_thread_ID;
 	Event_screen_refresh =  SDL_RegisterEvents(1);
 
@@ -41,7 +42,8 @@ int main(int argc , char* argv[]){
 	
 	//creates a windows and a board with 50x20 cases
 	create_board_window(board_size[0],board_size[1]);
-    
+    x=game_state.objects[pacman_id].pos[0];
+	y=game_state.objects[pacman_id].pos[1];
     while(!done){
 
         while (SDL_PollEvent(&event)) {
@@ -56,7 +58,20 @@ int main(int argc , char* argv[]){
             }
 
             if(event.type==SDL_MOUSEMOTION){
-                printf("Teste\n");
+                //Send info about pacman to server
+				int x_new,y_new;
+				get_board_place(event.motion.x,event.motion.y,&x_new,y_new);
+				//if the mouse is different, send to server
+				if(x!=x_new || y!=y_new){
+					C2S_message msg;
+					msg.type=1;//pacman
+					msg.x=x_new;
+					msg.y=y_new;
+					send(sock_fd,&msg,sizeof(msg),0);
+				}
+			//do event for monster
+
+				
             }
             
 

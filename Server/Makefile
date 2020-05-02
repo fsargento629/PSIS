@@ -1,2 +1,2 @@
-server: server.c
-	gcc -W -g server.c  -o server 
+server: server.c server_main.c
+	gcc -W -g server_main.c server.c  -pthread -o server 

@@ -23,7 +23,9 @@ typedef struct setup_message{
 } setup_message;
 
 typedef struct C2S_message{
-    game_object_struct game_object;
+    int type;
+    int x;
+    int y;
 }C2S_message;
 
 typedef struct S2C_message{
