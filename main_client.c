@@ -3,55 +3,41 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-
 #include "UI/UI_library.h"
 #include "Server/common.h"
 #include "client.h"
 
-Uint32 Event_ShowCharacter;
+int pacman_id,monster_id;
 int sock_fd;
-
+struct sockaddr_in server_addr;
+setup_message first_message;
+game_state_struct game_state;
+game_state_struct new_game_state;
 
 int main(int argc , char* argv[]){
 
-	
+	Uint32 Event_screen_refresh;
 	SDL_Event event;
 	int done = 0,board_size[2];
 	pthread_t sock_thread_ID;
-
-	Event_ShowCharacter =  SDL_RegisterEvents(1);
+	Event_screen_refresh =  SDL_RegisterEvents(1);
 		 
-	struct sockaddr_in server_addr;
-
-	sock_fd= socket(AF_INET, SOCK_STREAM, 0);
-	if (sock_fd == -1){
-		perror("socket: ");
-		exit(-1);
-    }
-
-		server_addr.sin_family = AF_INET;
-		int port_number;
-		if(sscanf(argv[2], "%d", &port_number)!=1){
-			printf("argv[2] is not a number\n");
-			exit(-1);
-		}
-	  server_addr.sin_port= htons(port_number);
-	  if(inet_aton(argv[1], &server_addr.sin_addr) == 0){
-			printf("argv[1]is not a valida address\n");
-			exit(-1);
-		}
-
-	  printf("connecting to %s %d\n", argv[1], server_addr.sin_port );
-
-	if( -1 == connect(sock_fd,
-	  			        (const struct sockaddr *) &server_addr,	sizeof(server_addr))){
-	  				printf("Error connecting\n");
-	                exit(-1);
-	}
-
-		 
-    // Create socket thread 
 	
+
+	//setup of communication
+	first_message=setup_comm(argv[1],&sock_fd,argv[2],&server_addr);
+	game_state=first_message.game_state;
+	new_game_state=game_state;
+	board_size[0]=first_message.board_size[0];
+	board_size[1]=first_message.board_size[1];
+	
+ 
+    // Create socket thread 
+	socket_thread_args args;
+	args.new_game_state_pt=&new_game_state;
+	args.sock_fd_pt=&sock_fd;
+	args.new_game_state_pt=Event_screen_refresh;
+	sock_thread_ID=pthread_create(&sock_thread_ID,NULL,sock_thread,&args);
 	
 	//creates a windows and a board with 50x20 cases
 	create_board_window(board_size[0],board_size[1]);
@@ -63,15 +49,19 @@ int main(int argc , char* argv[]){
 			if(event.type == SDL_QUIT) {
 					done = SDL_TRUE;
 			}
-			if(event.type == Event_ShowCharacter){
-				
+			if(event.type == Event_screen_refresh){
 				printf("new event received\n");
+				new_game_state=*(game_state_struct*)(event.user.data1);
+				void update_screen(&game_state,&new_game_state);
+				game_state=new_game_state;
 			}
 
 			
 			if(event.type == SDL_MOUSEMOTION){
-				//
+				
 				}
+
+			
 			}
 		}
 	
