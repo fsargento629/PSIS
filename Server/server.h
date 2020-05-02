@@ -15,7 +15,7 @@ typedef struct client_thread_args
    int fd;
 }client_thread_args;
 
-board_data_struct read_board_data(char* file_name)
+board_data_struct read_board_data(char* file_name);
 void init_server();
 void* accept_thread(void* arg);
 void* client_thread(void* arg);

@@ -16,7 +16,7 @@ board_data_struct read_board_data(char* file_name){
         exit(-1);
     }
 
-    fgets(buff,sizeof[buff],fp);
+    fgets(buff,sizeof(buff),fp);
     sscanf(buff,"%d %d",size[0],size[1]);
 
     ret.board_size[0]=size[0];

@@ -81,7 +81,9 @@ void* sock_thread(void* args_pt){
 void inform_server(game_object_struct game_object,int sock_fd){
     C2S_message message;
 
-    message.game_object=game_object;
+    message.type=game_object.type;
+    message.x=game_object.pos[0];
+    message.y=game_object.pos[1];
     send(sock_fd,&message,sizeof(message),0);
 
 }

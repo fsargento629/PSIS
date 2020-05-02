@@ -60,7 +60,7 @@ int main(int argc , char* argv[]){
             if(event.type==SDL_MOUSEMOTION){
                 //Send info about pacman to server
 				int x_new,y_new;
-				get_board_place(event.motion.x,event.motion.y,&x_new,y_new);
+				get_board_place(event.motion.x,event.motion.y,&x_new,&y_new);
 				//if the mouse is different, send to server
 				if(x!=x_new || y!=y_new){
 					C2S_message msg;
