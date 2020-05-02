@@ -1,4 +1,6 @@
 #define SERVER_ADDRESS "192.168.5.66"
+#define SERVER_PORT 3000
+int sock_fd;
 
 typedef struct socket_thread_args{
     game_state_struct* new_game_state_pt;
@@ -9,8 +11,7 @@ typedef struct socket_thread_args{
 
 
 
-setup_message setup_comm(char* server_ip,int* sock_fd,char* port,
-                                struct sockaddr_in* server_addr);
+setup_message setup_comm(char* server_ip,char* port);
 void* sock_thread(void* args);                                
 void inform_server(game_object_struct game_object,int sock_fd);
 void update_screen(game_state_struct* game_state,game_state_struct* new_game_state);

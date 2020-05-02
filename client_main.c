@@ -6,10 +6,10 @@
 #include "UI/UI_library.h"
 #include "Server/common.h"
 #include "client.h"
+#include <unistd.h>
 
 int pacman_id,monster_id;
-int sock_fd;
-struct sockaddr_in server_addr;
+
 setup_message first_message;
 game_state_struct game_state;
 game_state_struct new_game_state;
@@ -25,13 +25,12 @@ int main(int argc , char* argv[]){
 
    
     //setup of communication
-	first_message=setup_comm(argv[1],&sock_fd,argv[2],&server_addr);
+	first_message=setup_comm(argv[1],argv[2]);
 	game_state=first_message.game_state;
 	new_game_state=game_state;
 	board_size[0]=first_message.board_size[0];
 	board_size[1]=first_message.board_size[1];
-	pacman_id=first_message.pacman_num;
-	monster_id=first_message.monster_num;
+	
 
     // Create socket thread 
 	socket_thread_args args;
@@ -51,10 +50,13 @@ int main(int argc , char* argv[]){
 					done = SDL_TRUE;
 			}
             if(event.type==Event_screen_refresh){
-                printf("new event received\n");
+                //printf("new event received\n");
                 new_game_state=*(game_state_struct*)(event.user.data1);
-                update_screen(&game_state,&new_game_state);
+                //update_screen(&game_state,&new_game_state);
+				paint_brick(1,1);
+          
                 game_state=new_game_state;
+				usleep(10);
             }
 
             if(event.type==SDL_MOUSEMOTION){

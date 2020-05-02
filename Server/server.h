@@ -1,8 +1,10 @@
 #include "common.h"
 #define BOARDTXT "board.txt"
+#define DEFAULT_COLOR 1
 game_state_struct game_state;
 
 int server_socket;
+int client_fd_list[MAXPLAYERS];
 
 typedef struct board_data_struct
 {
@@ -12,10 +14,17 @@ typedef struct board_data_struct
 
 typedef struct client_thread_args
 {
+   int player_num;
    int fd;
 }client_thread_args;
 
-board_data_struct read_board_data(char* file_name);
-void init_server();
-void* accept_thread(void* arg);
-void* client_thread(void* arg);
+board_data_struct board_data;
+
+board_data_struct read_board_data(char* file_name);//
+void init_server();//
+void* accept_thread(void* arg);//
+void* client_thread(void* arg);//
+void update_board(int player,C2S_message msg);
+int send_initial_message(int client_fd,int player_num);//
+void init_player_position(int player_num);//
+int update_clients();//

@@ -6,6 +6,7 @@ typedef struct game_object_struct{
     int type;// 0-> empty ;1->pacman;2->mosnter;3->brick;4->cherry;5->lemon
     int color;
     int pos[2];
+    int player;
     
 }game_object_struct;
 
@@ -17,8 +18,6 @@ typedef struct game_state_struct{
 typedef struct setup_message{
     int board_size[2];
     int player_num;
-    int pacman_num;
-    int monster_num;
     game_state_struct game_state;
 } setup_message;
 

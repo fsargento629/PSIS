@@ -11,37 +11,38 @@
 //Initial message received by server
 //Returns struct of setup message
 
-setup_message setup_comm(char* server_ip,int* sock_fd,char* port,
-                                struct sockaddr_in* server_addr){
+setup_message setup_comm(char* server_ip,char* port){
 
     
     setup_message first_message;
-	*sock_fd= socket(AF_INET, SOCK_STREAM, 0);
-	if (*sock_fd == -1){
+    struct sockaddr_in server_addr;
+	sock_fd= socket(AF_INET, SOCK_STREAM, 0);
+	if (sock_fd == -1){
 		perror("socket: ");
 		exit(-1);
     }
 
-	server_addr->sin_family = AF_INET;
-	int port_number;
-	if(sscanf(port, "%d", &port_number)!=1){
+	server_addr.sin_family = AF_INET;
+	//int port_number;
+	/*if(sscanf(port, "%d", &port_number)!=1){
 		printf("argv[2] is not a number\n");
 		exit(-1);
-	}
-	  server_addr->sin_port= htons(port_number);
-	  if(inet_aton(server_ip, &server_addr->sin_addr) == 0){
+	}*/
+	  server_addr.sin_port= htons(3000);
+	  if(inet_aton(server_ip, &server_addr.sin_addr) == 0){
 			printf("argv[1]is not a valida address\n");
 			exit(-1);
 		}
 
-	  printf("connecting to %s %d\n", server_ip, server_addr->sin_port );
+	  printf("connecting to %s on %d\n", server_ip, server_addr.sin_port );
 
-	if( -1 == connect(*sock_fd,
-	  			        (const struct sockaddr *) server_addr,	sizeof(&server_addr))){
-	  				printf("Error connecting\n");
-	                exit(-1);
-	}
-    int nbytes = read(*sock_fd ,&first_message , sizeof(first_message)); 
+	if(connect(sock_fd,(const struct sockaddr*)&server_addr,
+                                    sizeof(server_addr))==-1){
+        printf("Error connecting to server\n");
+        exit(-1);                               
+    }
+
+    int nbytes = read(sock_fd ,&first_message , sizeof(first_message)); 
     printf("Received %d bytes from the server on setup\n",nbytes);
     return first_message;    
 
@@ -63,7 +64,7 @@ void* sock_thread(void* args_pt){
 
     //loop receiving messages from the server and refreshing main thread 
     while((err_rcv=recv(*sock_fd,&msg,sizeof(msg),0))>0){
-        printf("Received %d bytes from server\n",err_rcv);
+        //printf("Received %d bytes from server\n",err_rcv);
         free(new_game_state);
         new_game_state=malloc(sizeof(game_state_struct));
         *new_game_state=msg.game_state;
