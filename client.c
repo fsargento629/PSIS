@@ -3,7 +3,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-
+#include<unistd.h>
 #include "UI/UI_library.h"
 #include "Server/common.h"
 #include "client.h"
@@ -41,7 +41,7 @@ setup_message setup_comm(char* server_ip,int* sock_fd,char* port,
 	  				printf("Error connecting\n");
 	                exit(-1);
 	}
-    int nbytes = read(*sock_fd ,first_message , sizeof(first_message)); 
+    int nbytes = read(*sock_fd ,&first_message , sizeof(first_message)); 
     printf("Received %d bytes from the server on setup\n",nbytes);
     return first_message;    
 
@@ -65,16 +65,16 @@ void* sock_thread(void* args_pt){
     while((err_rcv=recv(*sock_fd,&msg,sizeof(msg),0))>0){
         printf("Received %d bytes from server\n",err_rcv);
         free(new_game_state);
-        new_game_state=mallo(sizeof(game_state_struct));
+        new_game_state=malloc(sizeof(game_state_struct));
         *new_game_state=msg.game_state;
         SDL_zero(new_event);
         new_event.type = arg->Event_screen_refresh;
         new_event.user.data1=new_game_state;
-        SDL_PushEvent(&new_game_state);
+        SDL_PushEvent(&new_event);
 
     }
     printf("Sock thread exiting\n");
-    return NULL;
+  
     
 }
 //Function to inform the server of a move made by the player
@@ -121,7 +121,7 @@ int object_changed(game_object_struct old,game_object_struct new){
 //draw an object
 void draw_object(game_object_struct object){
     if(object.type==0)//empty
-        return NULL;
+        exit(0);
     int color[3]={0,0,0};
     color[object.color]=255;
 

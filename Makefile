@@ -1,2 +1,2 @@
-output: main_client.c client.c
-	gcc -W -g main_client.c client.c UI/UI_library.c  -o client -lSDL2 -lSDL2_image
+output: client_main.c client.c
+	gcc -W -g client_main.c client.c UI/UI_library.c  -o client  -pthread -lSDL2 -lSDL2_image

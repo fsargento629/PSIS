@@ -7,10 +7,6 @@ typedef struct socket_thread_args{
 
 }socket_thread_args;
 
-typedef struct player_struct
-{
-   int player_num;
-};
 
 
 setup_message setup_comm(char* server_ip,int* sock_fd,char* port,
