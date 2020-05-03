@@ -12,7 +12,7 @@ typedef struct game_object_struct{
 
 typedef struct game_state_struct{
     int scores[MAXPLAYERS];
-    game_object_struct objects[MAXOBJECTS];
+    game_object_struct** board;
 }game_state_struct;
 
 typedef struct setup_message{

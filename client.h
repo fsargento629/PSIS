@@ -1,6 +1,8 @@
 #define SERVER_ADDRESS "192.168.5.66"
 #define SERVER_PORT 3000
+
 int sock_fd;
+
 
 typedef struct socket_thread_args{
     game_state_struct* new_game_state_pt;

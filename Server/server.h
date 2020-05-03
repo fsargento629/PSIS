@@ -6,9 +6,11 @@ game_state_struct game_state;
 int server_socket;
 int client_fd_list[MAXPLAYERS];
 
+
 typedef struct board_data_struct
 {
    int board_size[2];
+   game_object_struct** board;
 }board_data_struct;
 
 

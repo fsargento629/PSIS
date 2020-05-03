@@ -4,7 +4,7 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include<unistd.h>
-#include "UI/UI_library.h"
+#include "UI_library.h"
 #include "Server/common.h"
 #include "client.h"
 
@@ -41,10 +41,14 @@ setup_message setup_comm(char* server_ip,char* port){
         printf("Error connecting to server\n");
         exit(-1);                               
     }
-
-    int nbytes = read(sock_fd ,&first_message , sizeof(first_message)); 
-    printf("Received %d bytes from the server on setup\n",nbytes);
+    
+    int nbytes = recv(sock_fd ,&first_message , sizeof(setup_message),0); 
+    printf("Received %d bytes from the server on setup:\n",nbytes);
+    printf("\nBoard size: %d %d\nPlayer id:%d\n",first_message.board_size[0],
+    first_message.board_size[1],first_message.player_num);
+    
     return first_message;    
+
 
 }
 
@@ -64,7 +68,7 @@ void* sock_thread(void* args_pt){
 
     //loop receiving messages from the server and refreshing main thread 
     while((err_rcv=recv(*sock_fd,&msg,sizeof(msg),0))>0){
-        //printf("Received %d bytes from server\n",err_rcv);
+        printf("Received %d bytes from server\n",err_rcv);
         free(new_game_state);
         new_game_state=malloc(sizeof(game_state_struct));
         *new_game_state=msg.game_state;

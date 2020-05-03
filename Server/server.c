@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 board_data_struct read_board_data(char* file_name){
-    int size[2]={0,0};
+    int size_x,size_y;
     char buff[100];
     FILE* fp=fopen(file_name,"r");
     board_data_struct ret;
@@ -20,11 +20,12 @@ board_data_struct read_board_data(char* file_name){
     }
 
     fgets(buff,sizeof(buff),fp);
-    sscanf(buff,"%d %d",size,size+1);
+    sscanf(buff,"%d %d",&size_x,&size_y);
 
-    ret.board_size[0]=size[0];
-    ret.board_size[1]=size[1];
+    ret.board_size[0]=size_x;
+    ret.board_size[1]=size_y;
 
+    
 
     return ret;
 
@@ -37,7 +38,9 @@ int send_initial_message(int client_fd,int player_num){
     msg.board_size[0]=board_data.board_size[0];
     msg.board_size[1]=board_data.board_size[1];
 
-    int nbytes= write(client_fd,&msg,sizeof(msg));
+    //printf("Sent %d %d\n",msg.board_size[0],msg.board_size[1]);
+    int nbytes= send(client_fd,&msg,sizeof(setup_message),0); //critical!!
+    //printf("%d %d %d\n",msg.board_size[0],msg.board_size[1],msg.player_num);
     return nbytes;
 }
 
@@ -110,6 +113,7 @@ void* client_thread(void* client_args){
     int player_num=args.player_num;
     init_player_position(player_num);
     send_initial_message(client_fd,player_num);
+    client_fd_list[player_num]=client_fd;
     int err_rcv;
     C2S_message msg;
     while((err_rcv = recv(client_fd,&msg,sizeof(msg),0))>0 ){
@@ -141,7 +145,7 @@ void* accept_thread(void*arg){
             exit(-1);
         }
         printf("Accepted new connection\n");
-        client_fd_list[i]=client_fd;
+        
         client_data.fd=client_fd;
         client_data.player_num=i;      
         pthread_create(&client_thread_ids[i],NULL,client_thread,&client_data);
@@ -160,6 +164,7 @@ int update_clients(){
         else
         {
            //send to server
+          
            write(client_fd_list[i],&msg,sizeof(S2C_message));
         }
         
