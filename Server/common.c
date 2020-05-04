@@ -50,3 +50,38 @@ int objects_are_different(game_object_struct obj1,game_object_struct obj2){
         return 1;
     return 0;
 }
+
+void printf_game_state(int size_x,int size_y,game_state_struct* game){
+
+    int x,y;
+    if(game==NULL){
+        printf("Game state is NULL\n");
+        exit(-1);
+    }
+    if(game->board==NULL){
+        printf("Board is NULL\n");
+        exit(-1);
+    }
+    printf("----- Printing game state ----\n");
+    for(y=0;y<size_y;y++){
+        for(x=0;x<size_x;x++){
+            if(game->board[y][x].type==0)
+                printf(" ");
+            else if(game->board[y][x].type==1)
+                printf("P");
+            else if(game->board[y][x].type==2)
+                printf("M");
+            else if(game->board[y][x].type==3)
+                printf("B");
+            else if(game->board[y][x].type==4)
+                printf("C");
+            else if(game->board[y][x].type==5)
+                printf("L");
+
+        }
+        printf("\n");
+    }
+
+    printf("----- Game state printed ----\n");
+
+}

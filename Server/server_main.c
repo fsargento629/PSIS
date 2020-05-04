@@ -21,14 +21,16 @@ int main(int argc,char*argv[]){
     pthread_create(&accept_thread_id,NULL,accept_thread,NULL);
 
     while(1){
-        usleep(100*1000); 
+        
         //update clients
         for(i=0;i<MAXPLAYERS;i++){
             if(client_fd_list[i]!=0){
+                
                 nbytes=send_game_state(client_fd_list[i]);
                 printf("[Client updated] Sent %d bytes to client %d\n",nbytes,i);            
             }
         }
+        usleep(100*1000); 
     }
 
     close(server_socket);

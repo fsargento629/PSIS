@@ -9,29 +9,30 @@
 #include "client.h"
 
 
-// alocates new game state in game_state and returns the number of bytes read
+// changes the content of game_state and returns number of bytes read
 int receive_game_state(game_state_struct* game_state,int socket_fd){
-    int nbytes,Nbytes;
+    int nbytes,Nbytes=0;
     int i=0;
-    game_state=malloc(sizeof(game_state_struct));
-    game_object_struct** board=malloc(sizeof(game_object_struct*)*board_size[0]); 
-
+    game_object_struct** board=malloc(sizeof(game_object_struct*)*board_size[1]); 
+    //printf("[Setup] Receiving board from server\n");
     for(i=0;i<board_size[1];i++){
         board[i] = malloc (sizeof(game_object_struct) * board_size[0]);
         //receive line from server
         nbytes=recv(sock_fd,board[i],sizeof(game_object_struct)*board_size[0],0);
-        Nbytes=nbytes++;
-        //printf("Received line %d --%d bytes--\n",i,nbytes);
+        Nbytes=Nbytes+nbytes;
+        
     }
     //receive score
     int scores[MAXPLAYERS];
     nbytes=recv(sock_fd,scores,sizeof(scores),0);
-    Nbytes=nbytes++;
+    Nbytes=Nbytes+nbytes;
+    //printf("[Receive game_state] Received %d bytes from server\n",Nbytes);//
     for(i=0;i<MAXPLAYERS;i++)
         game_state->scores[i]=scores[i];
-
     //initial game state has been received
     game_state->board=board;
+    //printf("Exiting receive state\n");
+   
     return Nbytes;
 }
 
@@ -48,7 +49,7 @@ int receive_game_state(game_state_struct* game_state,int socket_fd){
     3) Receive the scores (Also given by receive_game_state)
     
     */
-int setup_comm(char* server_ip,char* port,game_state_struct* game_state){//game_state is initially empty!
+int setup_comm(char* server_ip,char* port,game_state_struct* game_state){
     int nbytes,Nbytes=0;
     setup_message msg;
     struct sockaddr_in server_addr;
@@ -81,13 +82,15 @@ int setup_comm(char* server_ip,char* port,game_state_struct* game_state){//game_
 
     //Initiating setup protocol
     nbytes = recv(sock_fd ,&msg , sizeof(setup_message),0); 
-    Nbytes=nbytes++;
+    printf("[Setup] Received %d bytes from server (1/2)\n",nbytes);
+    Nbytes=Nbytes+nbytes;
     player_id=msg.player_num;
     board_size[0]=msg.board_size[0];
     board_size[1]=msg.board_size[1];
     // Now receiving state:
-    nbytes=receive_game_state(game_state,sock_fd);//game_state is a global var! (in client.h)
-    Nbytes=nbytes++;
+    nbytes=receive_game_state(game_state,sock_fd);
+    printf("[Setup] Received %d bytes from server (2/2)\n",nbytes);
+    Nbytes=Nbytes+nbytes;
 
     return Nbytes;    
 
@@ -109,12 +112,16 @@ void* sock_thread(void* args_pt){
 
     //loop receiving messages from the server and refreshing main thread 
     while(disconnect==0){
+        new_game_state=malloc(sizeof(game_object_struct));//aloocate space for new_game_state
+        //printf("Entering receive_game_state\n");
         nbytes=receive_game_state(new_game_state,socket_fd);
         if(nbytes==-1)//disconnect
             break;
+        printf("[Socket thread] Received %d bytes from server\n",nbytes);
         SDL_zero(new_event);
         new_event.type = arg->Event_screen_refresh;
         new_event.user.data1=new_game_state;
+        printf("Sent event to main\n");
         SDL_PushEvent(&new_event);
     }
 
@@ -153,6 +160,7 @@ void draw_object(game_object_struct object){
 
 
 int send_move(int x,int y,int type){
+    printf("Sending move to server\n");
     C2S_message msg;
     int nbytes;
     msg.x=x;
@@ -166,6 +174,7 @@ void update_screen(game_object_struct** old_board,game_object_struct** new_board
     int x,y;
     //check for differences.
     //If there is a difference,paint it
+    //printf("Update screen has initiated\n");
     for(y=0;y<board_size[1];y++){
         for(x=0;x<board_size[0];x++){
             if(objects_are_different(old_board[y][x],new_board[y][x]))
@@ -173,4 +182,5 @@ void update_screen(game_object_struct** old_board,game_object_struct** new_board
         }
     }
 
+    //printf("Exiting update screen\n");  
 }

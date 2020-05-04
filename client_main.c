@@ -20,19 +20,24 @@ int main(int argc , char* argv[]){
 	pthread_t sock_thread_ID;
 	Event_screen_refresh =  SDL_RegisterEvents(1);
 	game_state_struct* game_state,* new_game_state;
-   
+	game_state=malloc(sizeof(game_state_struct));
+	new_game_state=malloc(sizeof(game_state_struct));
     //setup of communication
 	nbytes=setup_comm(argv[1],argv[2],game_state);
-	
-
-
+	printf("[Setup] Read %d bytes from server on setup\n",nbytes);
+	printf("[Setup] Board size: %dx%d\n",board_size[0],board_size[1]);
+	if(nbytes==0){
+		printf("Server startup connection error\n");
+		exit(-1);
+	}
+	printf("Setup complete\n");
     // Create socket thread 
 	socket_thread_args args;
+	int screen_ready=1;
 	args.sock_fd=sock_fd;
 	args.Event_screen_refresh=Event_screen_refresh;
 	sock_thread_ID=pthread_create(&sock_thread_ID,NULL,sock_thread,&args);
 	printf("Created socket thread\n");
-
 	create_board_window(board_size[0],board_size[1]);
 	printf("Created board\n");
 
@@ -43,12 +48,22 @@ int main(int argc , char* argv[]){
 			if(event.type == SDL_QUIT) {
 					done = SDL_TRUE;
 			}
-            if(event.type==Event_screen_refresh){//server has sent a message
-                new_game_state=(game_state_struct*)(event.user.data1);//allocates and receives a new game_state struct
-                update_screen(game_state->board,new_game_state->board);          
+            if(event.type==Event_screen_refresh && screen_ready==1){//server has sent a message
+				printf("Screen locked\n");
+				screen_ready=0;
+                new_game_state=event.user.data1;// receives a new game_state struct
+				printf("Updated new_game_state\n");
+                update_screen(game_state->board,new_game_state->board); 
+				printf("Screen updated\n");
+				//free(game_state->board);//delete old board        
+				//printf("Board deleted\n"); 
+				free(game_state);
+				printf("freed game_state\n");
               	game_state=new_game_state;
-				free(new_game_state);
-				usleep(10);
+				printf("Updated game_state\n");				
+				//usleep(100*1000);
+				screen_ready=1;
+				printf("Screen ready\n");
             }
 
             if(event.type==SDL_MOUSEMOTION){
@@ -57,7 +72,9 @@ int main(int argc , char* argv[]){
 				get_board_place(event.motion.x,event.motion.y,&x_new,&y_new);
 				//if the mouse is different, send to server
 				if(x!=x_new || y!=y_new){
+					printf("[[Move request]... ");
 					nbytes=send_move(x_new,y_new,1);//send move request to server
+					printf("Sent %d bytes to server\n",nbytes);
 					x=x_new;
 					y=y_new;
 				}

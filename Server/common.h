@@ -35,4 +35,4 @@ int is_empty(int x,int y,game_object_struct** board);
 void clear_board_cell(int x,int y,game_object_struct** board);
 int* find_object(int player,int type,game_object_struct** board,int size_x,int size_y);
 int objects_are_different(game_object_struct obj1,game_object_struct obj2);
-
+void printf_game_state(int size_x,int size_y,game_state_struct* game);

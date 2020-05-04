@@ -44,7 +44,7 @@ int init_player_position(int player_num){
 
 
 board_data_struct read_board_data(char*file_name){
-    board_data_struct board_data;
+    //board_data_struct board_data;
     //game_object_struct** board;
     int i_x,i_y;
     int x=0,y=0;
@@ -54,6 +54,8 @@ board_data_struct read_board_data(char*file_name){
     sscanf(buff,"%d %d",&x,&y);
     board_data.board_size[0]=x;
     board_data.board_size[1]=y;
+    board_size[0]=x;
+    board_size[1]=y;
     board=malloc(sizeof(game_object_struct*)*y);
     // read bricks:
     i_x=0;
@@ -105,11 +107,11 @@ int send_game_state(int client_fd){
     //Send board, line by line:
     for(i=0;i<board_size[1];i++){
             nbytes=send(client_fd,board[i],sizeof(game_object_struct)*board_size[0],0);
-            Nbytes=nbytes++; 
+            Nbytes=Nbytes+nbytes;
     }
     //Now send the score vector
     nbytes=send(client_fd,game_state.scores,sizeof(int)*MAXPLAYERS,0);
-    Nbytes=nbytes++;
+    Nbytes=Nbytes+nbytes;
 
     return Nbytes;
 
@@ -127,7 +129,6 @@ int send_initial_message(int client_fd,int player_num){
     
     */
 
-
     int nbytes,Nbytes=0;
     setup_message msg;
     msg.player_num=player_num;
@@ -135,11 +136,13 @@ int send_initial_message(int client_fd,int player_num){
     msg.board_size[1]=board_data.board_size[1];
     // send 1st part of the initial message
     nbytes=send(client_fd,&msg,sizeof(setup_message),0);
-    Nbytes=nbytes++;
+    printf("[Client setup] Server sent %d bytes do client %d (1/2)\n",nbytes,player_num);
+    Nbytes=Nbytes+nbytes;
     //Send seconde part of the message:
     nbytes=send_game_state(client_fd);
-    Nbytes=nbytes++;
-    printf("[ClientSetup] Server sent %d bytes to client %d\n ",Nbytes,player_num);
+    printf("[ClientSetup] Server sent %d bytes to client %d (2/2)\n ",nbytes,player_num);
+    Nbytes=Nbytes+nbytes;
+    printf("[ClientSetup] Server sent a total of %d bytes to client on startup\n",Nbytes);
     //Message has been sent. 
     return Nbytes;
 }
@@ -188,10 +191,12 @@ void update_board(int player_num,C2S_message msg){
 
 // Thread that receives updates from each client and triggers an event (?)
 void* client_thread(void* client_args){
+   
     client_thread_args args = *(client_thread_args*)client_args;
     int client_fd=args.fd;
     int player_num=args.player_num;
     init_player_position(player_num);//initiate player position
+    printf("Sending initial message to player %d\n",player_num);
     send_initial_message(client_fd,player_num); 
     client_fd_list[player_num]=client_fd;
     int err_rcv;
@@ -216,9 +221,10 @@ void* accept_thread(void*arg){ //args is empty
         perror("listen");
         exit(-1);
     }
-    printf("Waiting for connections\n");
+    //printf("Waiting for connections\n");
     i=0;
     while(1){
+        printf("[Accept thread] Ready to accept a new connection\n");
         client_fd=accept(server_socket,(struct sockaddr*)&client_addr,&size_addr);
         if(client_fd==-1){
             perror("accept:");
