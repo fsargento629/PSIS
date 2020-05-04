@@ -40,7 +40,8 @@ int main(int argc , char* argv[]){
 	printf("Created socket thread\n");
 	create_board_window(board_size[0],board_size[1]);
 	printf("Created board\n");
-
+	update_screen(NULL,game_state->board,1);//draw bricks
+	//printf_game_state(board_size[0],board_size[1],game_state);
 	int i=0;
     while(!done){
 
@@ -49,14 +50,12 @@ int main(int argc , char* argv[]){
 					done = SDL_TRUE;
 			}
             if(event.type==Event_screen_refresh && screen_ready==1){//server has sent a message
-				printf("Screen locked\n");
 				screen_ready=0;
                 new_game_state=event.user.data1;// receives a new game_state struct
-				printf("Updated new_game_state\n");
-                update_screen(game_state->board,new_game_state->board); 
+                update_screen(game_state->board,new_game_state->board,0); 
 				printf("Screen updated\n");
 				//free(game_state->board);//delete old board        
-				//printf("Board deleted\n"); 
+				
 				free(game_state);
 				printf("freed game_state\n");
               	game_state=new_game_state;

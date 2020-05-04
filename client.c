@@ -112,7 +112,7 @@ void* sock_thread(void* args_pt){
 
     //loop receiving messages from the server and refreshing main thread 
     while(disconnect==0){
-        new_game_state=malloc(sizeof(game_object_struct));//aloocate space for new_game_state
+        new_game_state=malloc(sizeof(game_state_struct));//aloocate space for new_game_state
         //printf("Entering receive_game_state\n");
         nbytes=receive_game_state(new_game_state,socket_fd);
         if(nbytes==-1)//disconnect
@@ -170,17 +170,23 @@ int send_move(int x,int y,int type){
     return nbytes;
 }
 
-void update_screen(game_object_struct** old_board,game_object_struct** new_board){
+void update_screen(game_object_struct** old_board,game_object_struct** new_board,int override){
     int x,y;
     //check for differences.
     //If there is a difference,paint it
-    //printf("Update screen has initiated\n");
+    
     for(y=0;y<board_size[1];y++){
         for(x=0;x<board_size[0];x++){
+            if(override){
+                draw_object(new_board[y][x]);
+                continue;
+            }
+        
             if(objects_are_different(old_board[y][x],new_board[y][x]))
                 draw_object(new_board[y][x]);
+        
         }
     }
 
-    //printf("Exiting update screen\n");  
+    
 }
