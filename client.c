@@ -8,13 +8,49 @@
 #include "Server/common.h"
 #include "client.h"
 
+
+// alocates new game state in game_state and returns the number of bytes read
+int receive_game_state(game_state_struct* game_state,int socket_fd){
+    int nbytes,Nbytes;
+    int i=0;
+    game_state=malloc(sizeof(game_state_struct));
+    game_object_struct** board=malloc(sizeof(game_object_struct*)*board_size[0]); 
+
+    for(i=0;i<board_size[1];i++){
+        board[i] = malloc (sizeof(game_object_struct) * board_size[0]);
+        //receive line from server
+        nbytes=recv(sock_fd,board[i],sizeof(game_object_struct)*board_size[0],0);
+        Nbytes=nbytes++;
+        //printf("Received line %d --%d bytes--\n",i,nbytes);
+    }
+    //receive score
+    int scores[MAXPLAYERS];
+    nbytes=recv(sock_fd,scores,sizeof(scores),0);
+    Nbytes=nbytes++;
+    for(i=0;i<MAXPLAYERS;i++)
+        game_state->scores[i]=scores[i];
+
+    //initial game state has been received
+    game_state->board=board;
+    return Nbytes;
+}
+
+
+
+
 //Initial message received by server
-//Returns struct of setup message
+//Returns number of bytes read
 
-setup_message setup_comm(char* server_ip,char* port){
-
+ /* 
+    Initial message protocol:
+    1) Receive player_num and board size 
+    2) Receive board , line by line by calling the function receive_game_state
+    3) Receive the scores (Also given by receive_game_state)
     
-    setup_message first_message;
+    */
+int setup_comm(char* server_ip,char* port,game_state_struct* game_state){//game_state is initially empty!
+    int nbytes,Nbytes=0;
+    setup_message msg;
     struct sockaddr_in server_addr;
 	sock_fd= socket(AF_INET, SOCK_STREAM, 0);
 	if (sock_fd == -1){
@@ -23,12 +59,12 @@ setup_message setup_comm(char* server_ip,char* port){
     }
 
 	server_addr.sin_family = AF_INET;
-	//int port_number;
-	/*if(sscanf(port, "%d", &port_number)!=1){
+	int port_number;
+	if(sscanf(port, "%d", &port_number)!=1){
 		printf("argv[2] is not a number\n");
 		exit(-1);
-	}*/
-	  server_addr.sin_port= htons(3000);
+	}
+	  server_addr.sin_port= htons(port_number);
 	  if(inet_aton(server_ip, &server_addr.sin_addr) == 0){
 			printf("argv[1]is not a valida address\n");
 			exit(-1);
@@ -42,12 +78,18 @@ setup_message setup_comm(char* server_ip,char* port){
         exit(-1);                               
     }
     
-    int nbytes = recv(sock_fd ,&first_message , sizeof(setup_message),0); 
-    printf("Received %d bytes from the server on setup:\n",nbytes);
-    printf("\nBoard size: %d %d\nPlayer id:%d\n",first_message.board_size[0],
-    first_message.board_size[1],first_message.player_num);
-    
-    return first_message;    
+
+    //Initiating setup protocol
+    nbytes = recv(sock_fd ,&msg , sizeof(setup_message),0); 
+    Nbytes=nbytes++;
+    player_id=msg.player_num;
+    board_size[0]=msg.board_size[0];
+    board_size[1]=msg.board_size[1];
+    // Now receiving state:
+    nbytes=receive_game_state(game_state,sock_fd);//game_state is a global var! (in client.h)
+    Nbytes=nbytes++;
+
+    return Nbytes;    
 
 
 }
@@ -55,80 +97,40 @@ setup_message setup_comm(char* server_ip,char* port){
 
 
 // This function handles the messages sent from the server to the client
+// Triggers an event when it receives a new msg (board,score)
+// Args-> sock_fd and event id
 void* sock_thread(void* args_pt){
     socket_thread_args* arg= (socket_thread_args*)args_pt;
-
-    int* sock_fd=arg->sock_fd_pt;
-    //game_state_struct* new_game_state=arg->new_game_state_pt;
-    S2C_message msg;
-    int err_rcv;
+    int socket_fd=arg->sock_fd;
+    int nbytes;
     SDL_Event new_event;
     game_state_struct* new_game_state;
-
+    int disconnect=0;
 
     //loop receiving messages from the server and refreshing main thread 
-    while((err_rcv=recv(*sock_fd,&msg,sizeof(msg),0))>0){
-        printf("Received %d bytes from server\n",err_rcv);
-        free(new_game_state);
-        new_game_state=malloc(sizeof(game_state_struct));
-        *new_game_state=msg.game_state;
+    while(disconnect==0){
+        nbytes=receive_game_state(new_game_state,socket_fd);
+        if(nbytes==-1)//disconnect
+            break;
         SDL_zero(new_event);
         new_event.type = arg->Event_screen_refresh;
         new_event.user.data1=new_game_state;
         SDL_PushEvent(&new_event);
-
     }
+
     printf("Sock thread exiting\n");
+
+   
   
     
 }
-//Function to inform the server of a move made by the player
-void inform_server(game_object_struct game_object,int sock_fd){
-    C2S_message message;
 
-    message.type=game_object.type;
-    message.x=game_object.pos[0];
-    message.y=game_object.pos[1];
-    send(sock_fd,&message,sizeof(message),0);
-
-}
-
-// This function compares the old and new game_states and decides what to draw
-void update_screen(game_state_struct* game_state,game_state_struct* new_game_state){
-
-    int i=0;
-        //clear and draw in other place if entry has changed:
-        for(i=0;i<MAXOBJECTS;i++){
-        if(object_changed(game_state->objects[i],new_game_state->objects[i])==1){
-            clear_place(game_state->objects[i].pos[0],game_state->objects[i].pos[1]);
-
-            //draw new object
-            draw_object(new_game_state->objects[i]);
-
-        }
-        
-    }               
-                        
-}
-
-// check if data entry has changed
-int object_changed(game_object_struct old,game_object_struct new){
-    if(old.pos[0]!=new.pos[0])
-        return 1;
-    if(old.pos[1]!=new.pos[1])
-        return 1;
-    if(old.type!=new.type)
-        return 1;
-    if(old.color!=new.color)
-        return 1;
-    return 0;
-    
-}
 
 //draw an object
 void draw_object(game_object_struct object){
     if(object.type==0)//empty
-        exit(0);
+        clear_place(object.pos[0],object.pos[1]);
+
     int color[3]={0,0,0};
     color[object.color]=255;
 
@@ -146,6 +148,29 @@ void draw_object(game_object_struct object){
     
     else if(object.type==5)//lemon
         paint_lemon(object.pos[0],object.pos[1]);
-        
-    
+         
+}
+
+
+int send_move(int x,int y,int type){
+    C2S_message msg;
+    int nbytes;
+    msg.x=x;
+    msg.y=y;
+    msg.type=type;
+    nbytes=send(sock_fd,&msg,sizeof(C2S_message),0);
+    return nbytes;
+}
+
+void update_screen(game_object_struct** old_board,game_object_struct** new_board){
+    int x,y;
+    //check for differences.
+    //If there is a difference,paint it
+    for(y=0;y<board_size[1];y++){
+        for(x=0;x<board_size[0];x++){
+            if(objects_are_different(old_board[y][x],new_board[y][x]))
+                draw_object(new_board[y][x]);
+        }
+    }
+
 }

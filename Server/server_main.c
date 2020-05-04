@@ -11,17 +11,27 @@
 
 
 int main(int argc,char*argv[]){
+    int i,nbytes;
     pthread_t accept_thread_id;
     board_data=read_board_data(BOARDTXT);
     printf("Board size: %d %d\n",board_data.board_size[0],board_data.board_size[1]);
     init_server();
+    for(i=0;i<MAXPLAYERS;i++)
+        client_fd_list[i]=0;
     pthread_create(&accept_thread_id,NULL,accept_thread,NULL);
 
     while(1){
-        usleep(100);
-        update_clients();
+        usleep(100*1000); 
+        //update clients
+        for(i=0;i<MAXPLAYERS;i++){
+            if(client_fd_list[i]!=0){
+                nbytes=send_game_state(client_fd_list[i]);
+                printf("[Client updated] Sent %d bytes to client %d\n",nbytes,i);            
+            }
+        }
     }
 
+    close(server_socket);
     printf("Server shutting down\n");
     return 0;
 }

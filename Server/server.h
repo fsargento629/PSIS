@@ -2,7 +2,8 @@
 #define BOARDTXT "board.txt"
 #define DEFAULT_COLOR 1
 game_state_struct game_state;
-
+game_object_struct** board;
+int board_size[2];
 int server_socket;
 int client_fd_list[MAXPLAYERS];
 
@@ -28,5 +29,7 @@ void* accept_thread(void* arg);//
 void* client_thread(void* arg);//
 void update_board(int player,C2S_message msg);
 int send_initial_message(int client_fd,int player_num);//
-void init_player_position(int player_num);//
+int init_player_position(int player_num);//
 int update_clients();//
+int send_game_state(int client_fd);//
+
