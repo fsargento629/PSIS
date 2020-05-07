@@ -40,9 +40,6 @@ int init_player_position(int player_num){
 
 }
 
-
-
-
 board_data_struct read_board_data(char*file_name){
     //board_data_struct board_data;
     //game_object_struct** board;
@@ -117,12 +114,10 @@ int send_game_state(int client_fd){
 
 }
 
-
-
 int send_initial_message(int client_fd,int player_num){
 
     /* 
-    Initial message protocol:
+    Initial message protocol:´
     1) Send player_num and board size to client
     2) Send board to client, line by line by calling the function send_game_state
     3) send  the scores
@@ -148,12 +143,9 @@ int send_initial_message(int client_fd,int player_num){
 }
 
 
-
-
-
-
-void init_server(){
+int init_server(){
     struct sockaddr_in server_local_addr;
+    int server_socket;
     server_socket=socket(AF_INET,SOCK_STREAM,0);
     if(server_socket==-1){
         perror("socket:");
@@ -170,9 +162,10 @@ void init_server(){
     }
 
     // should we do the listen here? idont think so
-
+    return server_socket;
 }
 //this function updates the board after a client request
+
 void update_board(int player_num,C2S_message msg){
     int* pos;
     //find matching pacman or moster and update its position
@@ -195,47 +188,79 @@ void* client_thread(void* client_args){
     client_thread_args args = *(client_thread_args*)client_args;
     int client_fd=args.fd;
     int player_num=args.player_num;
+    
+    int success;
+    success = args.success;
+    send(client_fd,&success, sizeof(success),0);
+
+    if(success == 0)
+        return NULL;
+
     init_player_position(player_num);//initiate player position
     printf("Sending initial message to player %d\n",player_num);
     send_initial_message(client_fd,player_num); 
     client_fd_list[player_num]=client_fd;
     int err_rcv;
     C2S_message msg;
-    while((err_rcv = recv(client_fd,&msg,sizeof(msg),0))>0 ){
+    while((err_rcv = recv(client_fd_list[player_num],&msg,sizeof(msg),0))>0 ){
         printf("[Client request] Received %d bytes from client %d \n",err_rcv,player_num);
         // handle message from client
         update_board(player_num,msg);
 
     }
-
-
 }
 
-void* accept_thread(void*arg){ //args is empty
+void* accept_thread(void* arg){ 
+    int server_socket = *(int*)arg;
+
     client_thread_args client_data;
     struct sockaddr_in client_addr;
     socklen_t size_addr = sizeof(client_addr);
     pthread_t client_thread_ids[MAXPLAYERS];
-    int client_fd,i=0;
+    int client_fd;
+
     if(listen(server_socket,MAXPLAYERS)==-1){
         perror("listen");
         exit(-1);
     }
     //printf("Waiting for connections\n");
-    i=0;
+
     while(1){
+<<<<<<< HEAD
         printf("[Accept thread] Ready to accept a new connection at %d\n",server_socket);
         client_fd=accept(server_socket,(struct sockaddr*)&client_addr,&size_addr);
+=======
+        int i=0;
+
+        printf("[Accept thread] Ready to accept a new connection\n");
+
+        while(client_fd_list[i] !=0)
+            i++;
+
+        printf("Socket = %d\n", server_socket);
+        client_fd = accept(server_socket,(struct sockaddr*)&client_addr,&size_addr);
+
+>>>>>>> 0a19062ee810e2040d9251b9f028039be9b24806
         if(client_fd==-1){
             perror("accept:");
             exit(-1);
         }
-        printf("Accepted new client (id=%d) from %d\n",i,client_fd);
         
+        //Checks if max number is reached
+        if(player_connections >= MAXPLAYERS)
+            client_data.success = 0;
+        else{
+            client_data.success = 1;
+            player_connections++;
+        }
+
+        printf("Accepted new client (id=%d) from %d\n",i,client_fd);
+  
         client_data.fd=client_fd;
-        client_data.player_num=i;      
+        client_data.player_num = i;      
         pthread_create(&client_thread_ids[i],NULL,client_thread,&client_data);
-        i++;
+
+        usleep(1000);
     }
 
 }
