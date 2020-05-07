@@ -7,14 +7,18 @@
 #include <stdlib.h>
 #include"server.h"
 #include <sys/un.h>
+#include <signal.h>
 #include <unistd.h>
 
 
-
+ 
 int main(int argc,char*argv[]){
     player_connections = 0; 
     int i,nbytes;
     pthread_t accept_thread_id;
+    printf("Program started\n");
+    printf("Assigning signal handlers\n");
+    signal(SIGPIPE, signal_callback_handler);
     board_data=read_board_data(BOARDTXT);
     printf("Board size: %d %d\n",board_data.board_size[0],board_data.board_size[1]);
     int server_socket = init_server();
@@ -36,7 +40,7 @@ int main(int argc,char*argv[]){
                 {
                     player_connections--;
                     close(client_fd_list[i]);
-                    client_fd_list[i] = 0;
+                    client_fd_list[i] = 0;  
                 }          
             }
         }

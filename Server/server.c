@@ -9,6 +9,14 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+
+void signal_callback_handler(int signum){
+
+        printf("Caught signal SIGPIPE %d\n",signum);
+}
+
+
+
 int init_player_position(int player_num){
     //give the player a pacman and a monster in random, not filled position:
     int x=0,y=0;
@@ -104,6 +112,8 @@ int send_game_state(int client_fd){
     //Send board, line by line:
     for(i=0;i<board_size[1];i++){
             nbytes=send(client_fd,board[i],sizeof(game_object_struct)*board_size[0],0);
+            if(nbytes<=0)
+                return -1;
             Nbytes=Nbytes+nbytes;
     }
     //Now send the score vector
@@ -226,10 +236,6 @@ void* accept_thread(void* arg){
     //printf("Waiting for connections\n");
 
     while(1){
-<<<<<<< HEAD
-        printf("[Accept thread] Ready to accept a new connection at %d\n",server_socket);
-        client_fd=accept(server_socket,(struct sockaddr*)&client_addr,&size_addr);
-=======
         int i=0;
 
         printf("[Accept thread] Ready to accept a new connection\n");
@@ -240,7 +246,6 @@ void* accept_thread(void* arg){
         printf("Socket = %d\n", server_socket);
         client_fd = accept(server_socket,(struct sockaddr*)&client_addr,&size_addr);
 
->>>>>>> 0a19062ee810e2040d9251b9f028039be9b24806
         if(client_fd==-1){
             perror("accept:");
             exit(-1);

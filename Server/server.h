@@ -1,11 +1,7 @@
 #include "common.h"
 #define BOARDTXT "board.txt"
-<<<<<<< HEAD
-//#define DEFAULT_COLOR 1
-=======
 #define DEFAULT_COLOR 1
 
->>>>>>> 0a19062ee810e2040d9251b9f028039be9b24806
 game_state_struct game_state;
 game_object_struct** board;
 int board_size[2];
@@ -29,6 +25,7 @@ typedef struct client_thread_args
 
 board_data_struct board_data;
 
+void signal_callback_handler(int signum);//
 board_data_struct read_board_data(char* file_name);//
 int init_server();//
 void* accept_thread(void* arg);//
