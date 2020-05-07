@@ -9,6 +9,10 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+
+
+
+
 int init_player_position(int player_num){
     //give the player a pacman and a monster in random, not filled position:
     int x=0,y=0;
@@ -104,6 +108,8 @@ int send_game_state(int client_fd){
     //Send board, line by line:
     for(i=0;i<board_size[1];i++){
             nbytes=send(client_fd,board[i],sizeof(game_object_struct)*board_size[0],0);
+            if(nbytes<=0)
+                return -1;
             Nbytes=Nbytes+nbytes;
     }
     //Now send the score vector
