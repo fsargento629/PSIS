@@ -53,7 +53,7 @@ int setup_comm(char* server_ip,char* port,game_state_struct* game_state){
     int nbytes,Nbytes=0;
     setup_message msg;
     struct sockaddr_in server_addr;
-	sock_fd= socket(AF_INET, SOCK_STREAM, 0);
+	sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock_fd == -1){
 		perror("socket: ");
 		exit(-1);
@@ -71,12 +71,23 @@ int setup_comm(char* server_ip,char* port,game_state_struct* game_state){
 			exit(-1);
 		}
 
-	  printf("connecting to %s on %d\n", server_ip, server_addr.sin_port );
+	printf("connecting to %s on %d\n", server_ip, server_addr.sin_port );
 
 	if(connect(sock_fd,(const struct sockaddr*)&server_addr,
                                     sizeof(server_addr))==-1){
         printf("Error connecting to server\n");
         exit(-1);                               
+    }
+    
+    //check if server is full
+    int success;
+    nbytes = recv(sock_fd ,&success , sizeof(success),0); 
+    
+    if (success == 0)
+    {
+        printf("Server is full\n");
+        close(sock_fd);
+        exit(-1);
     }
     
 

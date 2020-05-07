@@ -8,8 +8,6 @@
 #include "client.h"
 #include <unistd.h>
 
-
-
 int main(int argc , char* argv[]){
 	int pacman_id,monster_id;
 	int nbytes;
@@ -53,16 +51,16 @@ int main(int argc , char* argv[]){
 				screen_ready=0;
                 new_game_state=event.user.data1;// receives a new game_state struct
                 update_screen(game_state->board,new_game_state->board,0); 
-				printf("Screen updated\n");
+				//printf("Screen updated\n");
 				//free(game_state->board);//delete old board        
 				
 				free(game_state);
-				printf("freed game_state\n");
+				//printf("freed game_state\n");
               	game_state=new_game_state;
-				printf("Updated game_state\n");				
+				//printf("Updated game_state\n");				
 				//usleep(100*1000);
 				screen_ready=1;
-				printf("Screen ready\n");
+				//printf("Screen ready\n");
             }
 
             if(event.type==SDL_MOUSEMOTION){
@@ -77,20 +75,10 @@ int main(int argc , char* argv[]){
 					x=x_new;
 					y=y_new;
 				}
-			//do event for monster
-
-				
+			//do event for monster				
             }
-            
-
-    
-
 		}
     }
-
-	
-
-
     printf("\n\nFim\n");
     close_board_windows();
     exit(0);

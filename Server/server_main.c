@@ -10,24 +10,34 @@
 #include <unistd.h>
 
 
+
 int main(int argc,char*argv[]){
+    player_connections = 0; 
     int i,nbytes;
     pthread_t accept_thread_id;
     board_data=read_board_data(BOARDTXT);
     printf("Board size: %d %d\n",board_data.board_size[0],board_data.board_size[1]);
-    init_server();
+    int server_socket = init_server();
+
     for(i=0;i<MAXPLAYERS;i++)
         client_fd_list[i]=0;
-    pthread_create(&accept_thread_id,NULL,accept_thread,NULL);
+
+    pthread_create(&accept_thread_id,NULL,accept_thread,&server_socket);
 
     while(1){
         
         //update clients
-        for(i=0;i<MAXPLAYERS;i++){
+        for(i=0;i<=MAXPLAYERS;i++){
             if(client_fd_list[i]!=0){
                 
                 nbytes=send_game_state(client_fd_list[i]);
-                printf("[Client updated] Sent %d bytes to client %d\n",nbytes,i);            
+                printf("[Client updated] Sent %d bytes to client %d\n",nbytes,i);  
+                if(nbytes <= 0)
+                {
+                    player_connections--;
+                    close(client_fd_list[i]);
+                    client_fd_list[i] = 0;
+                }          
             }
         }
         usleep(100*1000); 
