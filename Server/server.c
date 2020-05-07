@@ -226,10 +226,6 @@ void* accept_thread(void* arg){
     //printf("Waiting for connections\n");
 
     while(1){
-<<<<<<< HEAD
-        printf("[Accept thread] Ready to accept a new connection at %d\n",server_socket);
-        client_fd=accept(server_socket,(struct sockaddr*)&client_addr,&size_addr);
-=======
         int i=0;
 
         printf("[Accept thread] Ready to accept a new connection\n");
@@ -240,7 +236,6 @@ void* accept_thread(void* arg){
         printf("Socket = %d\n", server_socket);
         client_fd = accept(server_socket,(struct sockaddr*)&client_addr,&size_addr);
 
->>>>>>> 0a19062ee810e2040d9251b9f028039be9b24806
         if(client_fd==-1){
             perror("accept:");
             exit(-1);
