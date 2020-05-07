@@ -11,7 +11,7 @@
 
 
 int main(int argc , char* argv[]){
-	int pacman_id,monster_id;
+	//int pacman_id,monster_id;
 	int nbytes;
     Uint32 Event_screen_refresh;
 	SDL_Event event;

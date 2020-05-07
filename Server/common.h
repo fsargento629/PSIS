@@ -13,7 +13,7 @@ typedef struct game_object_struct{
 
 typedef struct game_state_struct{ //is it useful?
     int scores[MAXPLAYERS];
-    game_object_struct** board;
+    game_object_struct** board; 
 }game_state_struct;
 
 typedef struct setup_message{//to send to client on startup
@@ -27,9 +27,9 @@ typedef struct C2S_message{//Client to Server message
     int y;
 }C2S_message;
 //not important should it be removed??
-typedef struct S2C_message{//Server to client message
+/*typedef struct S2C_message{//Server to client message
     game_state_struct game_state;
-}S2C_message;
+}S2C_message;*/
 
 int is_empty(int x,int y,game_object_struct** board);
 void clear_board_cell(int x,int y,game_object_struct** board);

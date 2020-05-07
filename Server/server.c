@@ -161,7 +161,7 @@ void init_server(){
     }
     server_local_addr.sin_family=AF_INET;
     server_local_addr.sin_addr.s_addr=INADDR_ANY;
-    server_local_addr.sin_port=htons(3000);
+    server_local_addr.sin_port=htons(DEFAULT_SERVER_PORT);
     int err=bind(server_socket,(struct sockaddr*)&server_local_addr,
                 sizeof(server_local_addr));
     if(err==-1){
@@ -224,7 +224,7 @@ void* accept_thread(void*arg){ //args is empty
     //printf("Waiting for connections\n");
     i=0;
     while(1){
-        printf("[Accept thread] Ready to accept a new connection\n");
+        printf("[Accept thread] Ready to accept a new connection at %d\n",server_socket);
         client_fd=accept(server_socket,(struct sockaddr*)&client_addr,&size_addr);
         if(client_fd==-1){
             perror("accept:");
