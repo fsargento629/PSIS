@@ -309,8 +309,8 @@ void* token_refill_thread(void*arg){
     time(t0);
     while(1){
         time(tf);
-        if(difftime(*tf,*t0)>=1){
-            *tokens=2;
+        if(difftime(*tf,*t0)>=1 && *tokens<2){
+            *tokens=TOKENS_PER_SECOND;
             *t0=*tf;
         }
     }
@@ -358,6 +358,7 @@ void* client_thread(void* client_args){
         }
         if(difftime(tf,t0)>30){
             init_player_position(player_num,1,1);//make player jump to random position and delete previous positions
+            printf("Inactivity jump\n");
             t0=tf;
         }
     }

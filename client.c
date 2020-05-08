@@ -144,27 +144,29 @@ void* sock_thread(void* args_pt){
 
 
 //draw an object
-void draw_object(game_object_struct object){
+void draw_object(game_object_struct object,int x, int y){
     if(object.type==0)//empty
-        clear_place(object.pos[0],object.pos[1]);
+        clear_place(x,y);
 
     int color[3]={0,0,0};
     color[object.color]=255;
 
-    if(object.type==1)//pacman
-        paint_pacman(object.pos[0],object.pos[1],color[0],color[1],color[2]);
+    if(object.type==PACMAN)//pacman
+        paint_pacman(x,y,color[0],color[1],color[2]);
 
-    else if(object.type==2)//mosnter
-        paint_monster(object.pos[0],object.pos[1],color[0],color[1],color[2]);
+    else if(object.type==MONSTER)//mosnter
+        paint_monster(x,y,color[0],color[1],color[2]);
     
-    else if(object.type==3)//brick
-        paint_brick(object.pos[0],object.pos[1]);
+    else if(object.type==BRICK)//brick
+        paint_brick(x,y);
     
-    else if(object.type==4)//cherry
-        paint_cherry(object.pos[0],object.pos[1]);    
+    else if(object.type==CHERRY)//cherry
+        paint_cherry(x,y);    
     
-    else if(object.type==5)//lemon
-        paint_lemon(object.pos[0],object.pos[1]);
+    else if(object.type==LEMON)//lemon
+        paint_lemon(x,y);
+    else if(object.type==SUPERPACMAN)
+        paint_powerpacman(x,y,color[0],color[1],color[2]);
          
 }
 
@@ -188,12 +190,12 @@ void update_screen(game_object_struct** old_board,game_object_struct** new_board
     for(y=0;y<board_size[1];y++){
         for(x=0;x<board_size[0];x++){
             if(override){
-                draw_object(new_board[y][x]);
+                draw_object(new_board[y][x],x,y);
                 continue;
             }
         
             if(objects_are_different(old_board[y][x],new_board[y][x]))
-                draw_object(new_board[y][x]);
+                draw_object(new_board[y][x],x,y);
         
         }
     }

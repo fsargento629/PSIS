@@ -36,7 +36,7 @@ int main(int argc,char*argv[]){
             if(client_fd_list[i]!=0){
                 
                 nbytes=send_game_state(client_fd_list[i]);
-                printf("[Client updated] Sent %d bytes to client %d\n",nbytes,i);  
+                //printf("[Client updated] Sent %d bytes to client %d\n",nbytes,i);  
                 if(nbytes <= 0)
                 {
                     player_connections--;

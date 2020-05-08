@@ -75,9 +75,9 @@ int main(int argc , char* argv[]){
 				get_board_place(event.motion.x,event.motion.y,&x_new,&y_new);
 				//if the mouse is different, send to server
 				if(x!=x_new || y!=y_new){
-					printf("[[Move request]... ");
+					//printf("[[Move request]... ");
 					nbytes=send_move(x_new,y_new,PACMAN);//send move request to server
-					printf("Sent %d bytes to server\n",nbytes);
+					//printf("Sent %d bytes to server\n",nbytes);
 					
 				}
 		
