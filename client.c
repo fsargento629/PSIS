@@ -37,8 +37,6 @@ int receive_game_state(game_state_struct* game_state,int socket_fd){
 }
 
 
-
-
 //Initial message received by server
 //Returns number of bytes read
 

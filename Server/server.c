@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include"server.h"
+#include "server.h"
 #include <sys/un.h>
 #include <unistd.h>
 
@@ -212,7 +212,6 @@ void* client_thread(void* client_args){
         printf("[Client request] Received %d bytes from client %d \n",err_rcv,player_num);
         // handle message from client
         update_board(player_num,msg);
-
     }
 }
 
