@@ -7,6 +7,7 @@
 #include "Server/common.h"
 #include "client.h"
 #include <unistd.h>
+#include <signal.h>
 
 int main(int argc , char* argv[]){
 	int *pos;
@@ -20,6 +21,7 @@ int main(int argc , char* argv[]){
 	game_state_struct* game_state,* new_game_state;
 	game_state=malloc(sizeof(game_state_struct));
 	new_game_state=malloc(sizeof(game_state_struct));
+	signal(SIGINT, signal_kill_handler);
     //setup of communication
 	nbytes=setup_comm(argv[1],argv[2],game_state);
 	printf("[Setup] Read %d bytes from server on setup\n",nbytes);

@@ -19,6 +19,7 @@ int main(int argc,char*argv[]){
     printf("Program started\n");
     printf("Assigning signal handlers\n");
     signal(SIGPIPE, signal_callback_handler);
+    signal(SIGINT, signal_kill_handler);
     board_data=read_board_data(BOARDTXT);
     printf("Board size: %d %d\n",board_data.board_size[0],board_data.board_size[1]);
     int server_socket = init_server();

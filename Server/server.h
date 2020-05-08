@@ -33,7 +33,7 @@ typedef struct token_data_struct
 
 board_data_struct board_data;
 
-void signal_callback_handler(int signum);//
+
 board_data_struct read_board_data(char* file_name);//
 int init_server();//
 void* accept_thread(void* arg);//

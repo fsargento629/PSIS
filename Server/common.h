@@ -36,6 +36,8 @@ typedef struct C2S_message{//Client to Server message
     game_state_struct game_state;
 }S2C_message;*/
 
+void signal_callback_handler(int signum);//
+void signal_kill_handler( int signum);//
 int is_empty(int x,int y,game_object_struct** board);
 void clear_board_cell(int x,int y,game_object_struct** board);
 int* find_object(int player,int type,game_object_struct** board,int size_x,int size_y);

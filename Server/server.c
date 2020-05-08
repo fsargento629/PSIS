@@ -10,10 +10,6 @@
 #include <unistd.h>
 #include <time.h>
 
-void signal_callback_handler(int signum){
-
-        printf("Caught signal SIGPIPE %d\n",signum);
-}
 
 
 

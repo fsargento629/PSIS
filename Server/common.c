@@ -9,6 +9,17 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+
+void signal_kill_handler( int signum){
+    printf("Shutting down due to Ctrl-C signal\n");
+    exit(0);
+}
+
+void signal_callback_handler(int signum){
+}
+
+
+
 int is_empty(int x,int y,game_object_struct** board){
     if(board[y][x].type==0)
         return 1;

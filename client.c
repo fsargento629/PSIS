@@ -126,21 +126,20 @@ void* sock_thread(void* args_pt){
         new_game_state=malloc(sizeof(game_state_struct));//aloocate space for new_game_state
         //printf("Entering receive_game_state\n");
         nbytes=receive_game_state(new_game_state,socket_fd);
-        if(nbytes==-1)//disconnect
-            break;
+
+        if(nbytes <= 0)//disconnect
+        {
+            printf("Server shut down. Closing client\n");
+            exit(0);
+        }
+
         printf("[Socket thread] Received %d bytes from server\n",nbytes);
         SDL_zero(new_event);
         new_event.type = arg->Event_screen_refresh;
         new_event.user.data1=new_game_state;
         printf("Sent event to main\n");
         SDL_PushEvent(&new_event);
-    }
-
-    printf("Sock thread exiting\n");
-
-   
-  
-    
+    }    
 }
 
 
