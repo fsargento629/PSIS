@@ -113,7 +113,7 @@ int main(int argc , char* argv[]){
 					free(pos);
 				}
 			}
-				//do event for monster	
+				
 
 
 			
