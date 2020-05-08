@@ -26,7 +26,7 @@ int main(int argc,char*argv[]){
 
     for(i=0;i<MAXPLAYERS;i++)
         client_fd_list[i]=0;
-
+    pthread_mutex_init(&board_lock, NULL);//mutex to control board use
     pthread_create(&accept_thread_id,NULL,accept_thread,&server_socket);
 
     while(1){
@@ -40,12 +40,13 @@ int main(int argc,char*argv[]){
                 if(nbytes <= 0)
                 {
                     player_connections--;
+                    //clear player
                     close(client_fd_list[i]);
                     client_fd_list[i] = 0;  
                 }          
             }
         }
-        usleep(50*1000); 
+        usleep(10*1000);//x miliseconds
     }
 
     close(server_socket);

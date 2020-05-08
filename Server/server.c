@@ -124,12 +124,14 @@ int send_game_state(int client_fd){
     int i;
     
     //Send board, line by line:
+    pthread_mutex_lock(&board_lock);
     for(i=0;i<board_size[1];i++){
             nbytes=send(client_fd,board[i],sizeof(game_object_struct)*board_size[0],0);
             if(nbytes<=0)
                 return -1;
             Nbytes=Nbytes+nbytes;
     }
+    pthread_mutex_unlock(&board_lock);
     //Now send the score vector
     nbytes=send(client_fd,game_state.scores,sizeof(int)*MAXPLAYERS,0);
     Nbytes=Nbytes+nbytes;
@@ -207,10 +209,11 @@ int update_board(int player_num,C2S_message msg){
     int* pos,*next_pos;
     int ret=0;//amount of movement tokens used
     //find matching pacman or moster and update its position
+    pthread_mutex_lock(&board_lock);
     pos=find_object(player_num,msg.type,board,board_size[0],board_size[1]);
-    
 
     if(pos[0]==-1 || pos[1]==-1){//if object is not found, exit function
+        pthread_mutex_unlock(&board_lock);
         free(pos);
         return 0 ;
     }
@@ -218,9 +221,7 @@ int update_board(int player_num,C2S_message msg){
     next_pos[0]=msg.x;
     next_pos[1]=msg.y;
     //Convert pacman/monster desired position to a position next to the pacman
-    closest_square(pos[0],pos[1],next_pos,board_size[0],board_size[1],board);
-
-    
+    closest_square(pos[0],pos[1],next_pos,board_size[0],board_size[1],board);   
 
 
     //Rule 1-Bounce. After applying rule1 the other rules still apply
@@ -231,6 +232,7 @@ int update_board(int player_num,C2S_message msg){
     //Rule 0- If spot is empty, move to it
     if(is_empty(next_pos[0],next_pos[1],board)){
         switch_places(pos,next_pos,board);
+        pthread_mutex_unlock(&board_lock);
         free(pos);
         free(next_pos);
         return 1;
@@ -294,7 +296,7 @@ int update_board(int player_num,C2S_message msg){
     }
 
 // End of movement rules
-
+    pthread_mutex_unlock(&board_lock);
     free(pos);
     free(next_pos);
     return ret;
@@ -335,8 +337,9 @@ void* client_thread(void* client_args){
 
     if(success == 0)
         return NULL;
-
+    pthread_mutex_lock(&board_lock);
     init_player_position(player_num,1,1);//initiate player position(player_num,do_player,do_monster)
+    pthread_mutex_unlock(&board_lock);
     printf("Sending initial message to player %d\n",player_num);
     send_initial_message(client_fd,player_num); 
     client_fd_list[player_num]=client_fd;

@@ -1,14 +1,14 @@
 #include "common.h"
 #define BOARDTXT "board.txt"
 #define DEFAULT_COLOR 1
-#define TOKENS_PER_SECOND 4
+#define TOKENS_PER_SECOND 2
 game_state_struct game_state;
 game_object_struct** board;
 int board_size[2];
 int client_fd_list[MAXPLAYERS];
 
 int player_connections;
-
+pthread_mutex_t board_lock;
 typedef struct board_data_struct
 {
    int board_size[2];
