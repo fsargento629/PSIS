@@ -15,7 +15,7 @@
 int main(int argc,char*argv[]){
     player_connections = 0; 
     int i,nbytes;
-    pthread_t accept_thread_id;
+    pthread_t accept_thread_id,fruit_thread_id;
     printf("Program started\n");
     printf("Assigning signal handlers\n");
     signal(SIGPIPE, signal_callback_handler);
@@ -29,6 +29,12 @@ int main(int argc,char*argv[]){
     pthread_mutex_init(&board_lock, NULL);//mutex to control board use
     pthread_create(&accept_thread_id,NULL,accept_thread,&server_socket);
 
+    //create fruit thread
+    fruit_thread_args fruit_thread_arg;
+    fruit_thread_arg.board=board;
+    fruit_thread_arg.size_x=board_data.board_size[0];
+    fruit_thread_arg.size_y=board_data.board_size[1];
+    pthread_create(&fruit_thread_id,NULL,fruit_thread,&fruit_thread_arg);
     while(1){
         
         //update clients

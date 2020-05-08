@@ -29,6 +29,23 @@ typedef struct token_data_struct
   time_t* t0,*tf;
 }token_data_struct;
 
+typedef struct fruit_thread_args
+{
+  int size_x;
+  int size_y;
+  game_object_struct** board;
+}fruit_thread_args;
+
+
+
+typedef struct fruit_struct
+{
+   int x;
+   int y;
+   time_t t0;
+
+}
+fruit_struct;
 
 
 board_data_struct board_data;
@@ -44,3 +61,5 @@ int init_player_position(int player_num,int do_pacman,int do_monster);
 int update_clients();//
 int send_game_state(int client_fd);//
 void* token_refill_thread(void*arg);
+void* fruit_thread(void*arg);
+int generate_fruit(int x,int y,int type,game_object_struct** board);

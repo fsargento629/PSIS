@@ -417,7 +417,115 @@ void* accept_thread(void* arg){
 
 }
 
+int generate_fruit(int x,int y,int type,game_object_struct** board){
+    pthread_mutex_lock(&board_lock);
+    if(board[y][x].type!=EMPTY){
+        pthread_mutex_unlock(&board_lock);
+        return 0;
+    }
+    else{
+        board[y][x].player=-1;
+        board[y][x].pos[0]=x;   
+        board[y][x].pos[1]=y;
+        board[y][x].type=type;
+        pthread_mutex_unlock(&board_lock);
+        return 1;
+    }
+}
 
+
+
+
+
+
+//Function that handles the fruit generation thread
+void* fruit_thread(void*arg){
+    fruit_thread_args args=*(fruit_thread_args*)arg;
+    int size_x=args.size_x;
+    int size_y=args.size_y;
+    int x,y,type;
+    game_object_struct** board=args.board;
+    fruit_struct* fruit_vector=calloc(2*(MAXPLAYERS-1),sizeof(fruit_struct));
+    int i;
+    //initialize every position at -2, to signal empty;
+    for(i=0;i<2*(MAXPLAYERS-1);i++){
+        fruit_vector[i].x=-2;
+        fruit_vector[i].y=-2;
+    }
+    int active_fruits=0;
+    
+    time_t tf;
+    while(1){
+        if(active_fruits<(2*(player_connections-1))){
+            type=rand()%2+CHERRY;//generates rand num between CHERRY and LEMON
+            do
+            {
+                x=rand()%size_x;
+                y=rand()%size_y;
+                
+            } while (generate_fruit(x,y,type,board)==0);
+            i=0;
+            while(fruit_vector[i].x!=-2)//find 1st empty vector position
+                i++;
+            fruit_vector[i].x=x;
+            fruit_vector[i].y=y;
+            printf("%d;generated a fruit\n",active_fruits);
+            active_fruits++;
+
+        }
+
+          //see if any fruit is missing
+        time(&tf);//save crurrent time in tf
+        for(i=0;i<2*(MAXPLAYERS-1);i++){
+            if(fruit_vector[i].x==-1){
+                //check timer
+                if(difftime(tf,fruit_vector[i].t0)>2){
+                    //generate fruit and save it in the fruit vector
+                    type=rand()%2+CHERRY;
+                     do
+                        {
+                            x=rand()%size_x;
+                            y=rand()%size_y;
+                            
+                        } while (generate_fruit(x,y,type,board)==0);
+                        
+                        i=0;
+                        while(fruit_vector[i].x!=-2)//find 1st empty vector position
+                            i++;
+                        fruit_vector[i].x=x;
+                        fruit_vector[i].y=y;
+                        active_fruits++;
+
+                }
+
+            }
+            else if(fruit_vector[i].x==-2)
+                continue;//-2 implies there is no fruit
+
+
+            else if(board[fruit_vector[i].y][fruit_vector[i].x].type!=CHERRY &&
+            board[fruit_vector[i].y][fruit_vector[i].x].type!=LEMON){
+
+                if(active_fruits>=(2*(player_connections-1))){//there are too many fruits
+                    fruit_vector[i].x=-2;
+                    fruit_vector[i].y=-2;
+                    active_fruits--;
+                    
+
+                }
+                //start timer for that fruit, if there are not too many fruits already
+                else {
+                    time(&fruit_vector[i].t0);
+                    fruit_vector[i].x=-1;
+                    fruit_vector[i].y=-1;
+                }
+            }
+        }
+
+      
+    }
+
+}
 
 
 
