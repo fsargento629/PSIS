@@ -23,6 +23,14 @@ typedef struct client_thread_args
    int success;
 }client_thread_args;
 
+typedef struct token_data_struct
+{
+  int* move_tokens;
+  time_t* t0,*tf;
+}token_data_struct;
+
+
+
 board_data_struct board_data;
 
 void signal_callback_handler(int signum);//
@@ -30,9 +38,9 @@ board_data_struct read_board_data(char* file_name);//
 int init_server();//
 void* accept_thread(void* arg);//
 void* client_thread(void* arg);//
-void update_board(int player,C2S_message msg);
+int update_board(int player,C2S_message msg);
 int send_initial_message(int client_fd,int player_num);//
-int init_player_position(int player_num);//
+int init_player_position(int player_num,int do_pacman,int do_monster);
 int update_clients();//
 int send_game_state(int client_fd);//
-
+void* token_refill_thread(void*arg);

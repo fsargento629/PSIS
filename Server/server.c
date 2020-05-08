@@ -8,7 +8,7 @@
 #include"server.h"
 #include <sys/un.h>
 #include <unistd.h>
-
+#include <time.h>
 
 void signal_callback_handler(int signum){
 
@@ -17,33 +17,51 @@ void signal_callback_handler(int signum){
 
 
 
-int init_player_position(int player_num){
+int init_player_position(int player_num,int do_pacman,int do_monster){
     //give the player a pacman and a monster in random, not filled position:
     int x=0,y=0;
-    do
-    {
-        x=rand()%board_size[0];
-        y=rand()%board_size[1];
-    } while(!is_empty(x,y,board));
-    //create pacman
-    board[y][x].player=player_num;
-    board[y][x].type=1;
-    board[y][x].pos[0]=x;
-    board[y][x].pos[1]=y;
-    board[y][x].color=1;
+    int *pos;
+    if(do_pacman==1){
+        do
+        {
+            x=rand()%board_size[0];
+            y=rand()%board_size[1];
+        } while(!is_empty(x,y,board));
+        //if there is a pacman of the same player anywhere, delet it
+        pos=find_object(player_num,PACMAN,board,board_size[0],board_size[1]);
+        if(pos[0]!=-1&&pos[1]!=-1)//if it is found, delete it
+            clear_board_cell(pos[0],pos[1],board);
+        free(pos);
+        //create pacman
+        board[y][x].player=player_num;
+        board[y][x].type=1;
+        board[y][x].pos[0]=x;
+        board[y][x].pos[1]=y;
+        board[y][x].color=1;
         
-    do
-    {
-        x=rand()%board_size[0];
-        y=rand()%board_size[1];
-    } while(!is_empty(x,y,board));
-    //create monster
-    board[y][x].player=player_num;
-    board[y][x].type=2;
-    board[y][x].pos[0]=x;
-    board[y][x].pos[1]=y;
-    board[y][x].color=1;
-
+        
+    }
+    
+    if(do_monster==1){
+        do
+        {
+            x=rand()%board_size[0];
+            y=rand()%board_size[1];
+        } while(!is_empty(x,y,board));
+        //if there is a monster of the same player anywhere, delete it
+        pos=find_object(player_num,MONSTER,board,board_size[0],board_size[1]);
+        if(pos[0]!=-1&&pos[1]!=-1)//if it is found, delete it
+            clear_board_cell(pos[0],pos[1],board);
+        free(pos);
+        //create monster
+        board[y][x].player=player_num;
+        board[y][x].type=2;
+        board[y][x].pos[0]=x;
+        board[y][x].pos[1]=y;
+        board[y][x].color=1;
+    }
+        
+   
     return 0;//if found  space for both the pacman and moster
 
 }
@@ -175,26 +193,142 @@ int init_server(){
     return server_socket;
 }
 //this function updates the board after a client request
+/* 
+    Movement Rules:
+    0)If the following block is empt, just move to it, i.e., switch places with it
+    1) If there is a brick in the way, bounce back
+    2) If two objects of the same player collide, they switch places
+    3) If two pacmen, or two monsters, collide, they change places
+    4) If a superpacman collides into a monster, it is eaten and put in a different position. The score is incremented
+    5) If a monster collides into a pacman, the pacman gets eaten and is put in a different position. The score is incremented
+    6) If a pacman and a fruit collide, it eats the fruit and becomes a superpacman
+    7) If a monster and a fruit collide, the fruit just disappears
+    
+*/
 
-void update_board(int player_num,C2S_message msg){
-    int* pos;
+// Updates the board, given a message from the client, and returns the amount of movement tokens used
+int update_board(int player_num,C2S_message msg){
+    int* pos,*next_pos;
+    int ret=0;//amount of movement tokens used
     //find matching pacman or moster and update its position
     pos=find_object(player_num,msg.type,board,board_size[0],board_size[1]);
-    //move the player:
-    board[msg.y][msg.x].color=board[pos[1]][pos[0]].color;
-    board[msg.y][msg.x].player=player_num;
-    board[msg.y][msg.x].type=msg.type;
-    board[msg.y][msg.x].pos[0]=msg.x;
-    board[msg.y][msg.x].pos[1]=msg.y;
-    //clear previous position
-    clear_board_cell(pos[0],pos[1],board);
     
+
+    if(pos[0]==-1 || pos[1]==-1){//if object is not found, exit function
+        free(pos);
+        return 0 ;
+    }
+    next_pos=calloc(2,sizeof(int));
+    next_pos[0]=msg.x;
+    next_pos[1]=msg.y;
+    //Convert pacman/monster desired position to a position next to the pacman
+    closest_square(pos[0],pos[1],next_pos,board_size[0],board_size[1],board);
+
+    
+
+
+    //Rule 1-Bounce. After applying rule1 the other rules still apply
+    if(board[next_pos[1]][next_pos[0]].type==BRICK){
+        ret=bounce_back(pos,next_pos,board,board_size[0],board_size[1]);
+    }
+
+    //Rule 0- If spot is empty, move to it
+    if(is_empty(next_pos[0],next_pos[1],board)){
+        switch_places(pos,next_pos,board);
+        free(pos);
+        free(next_pos);
+        return 1;
+    }
+
+    //Save player and type, to make the code easier to read =)
+    int player1=board[pos[1]][pos[0]].player;
+    int player2=board[next_pos[1]][next_pos[0]].player;
+    int type1=board[pos[1]][pos[0]].type;//object that wants to move
+    int type2=board[next_pos[1]][next_pos[0]].type;//object that is in the way, potentially
+
+    //Rule 2-objects of the same player change positions  
+    if(player1==player2&&player1>=0){
+        switch_places(pos,next_pos,board);
+        ret=1;
+    }
+
+    //Rule 3-two pacmen or two monster collide-> they switch places
+    
+    else if((type1==type2)&&(type1==PACMAN||type1==MONSTER||type1==SUPERPACMAN)){//both are pacmen, superpcamen or monsters
+        switch_places(pos,next_pos,board);
+        ret=1;
+        
+    }
+  
+    //Rule 4 and 5- Monster eats pacman and superpacman eats monster
+    else if(type1==MONSTER&&type2==PACMAN){
+        eat(pos,next_pos,board);
+        game_state.scores[player1]++;
+        init_player_position(player2,1,0);
+        ret=1;
+    }
+    else if(type1==PACMAN&&type2==MONSTER){
+        eat(next_pos,pos,board);
+        game_state.scores[player2]++;
+        init_player_position(player1,1,0);
+        ret=1;
+    }
+    else if(type1==SUPERPACMAN&&type2==MONSTER){
+        eat(pos,next_pos,board);
+        game_state.scores[player1]++;
+        init_player_position(player2,0,1);
+        ret=1;
+    }
+    else if(type1==MONSTER&&type2==SUPERPACMAN){
+        eat(next_pos,pos,board);
+        game_state.scores[player2]++;
+        init_player_position(player1,0,1);
+        ret=1;
+    }
+
+    // Rule 6 and 7 - Eat cherry
+    else if(type1==PACMAN&&type2==CHERRY){
+        eat(pos,next_pos,board);
+        board[next_pos[1]][next_pos[0]].type=SUPERPACMAN; 
+        ret=1;
+    }
+    else if(type2==CHERRY&&(type1==MONSTER||type1==SUPERPACMAN)){
+        eat(pos,next_pos,board);
+        ret=1;
+    }
+
+// End of movement rules
+
+    free(pos);
+    free(next_pos);
+    return ret;
 }
+
+void* token_refill_thread(void*arg){
+    printf("Entered\n");
+    token_data_struct* token_data= (token_data_struct*)arg;
+    time_t* t0=token_data->t0;
+    time_t* tf=token_data->tf;
+    int* tokens = token_data->move_tokens;
+    time(t0);
+    while(1){
+        time(tf);
+        if(difftime(*tf,*t0)>=1){
+            *tokens=2;
+            *t0=*tf;
+        }
+    }
+
+
+}
+
 
 
 // Thread that receives updates from each client and triggers an event (?)
 void* client_thread(void* client_args){
-   
+    pthread_t token_refill_thread_id;
+    time_t t0,tf; //to store last time the tokens were refilled
+    int move_tokens=2;//player receives 2 tokens per second
     client_thread_args args = *(client_thread_args*)client_args;
     int client_fd=args.fd;
     int player_num=args.player_num;
@@ -206,17 +340,30 @@ void* client_thread(void* client_args){
     if(success == 0)
         return NULL;
 
-    init_player_position(player_num);//initiate player position
+    init_player_position(player_num,1,1);//initiate player position(player_num,do_player,do_monster)
     printf("Sending initial message to player %d\n",player_num);
     send_initial_message(client_fd,player_num); 
     client_fd_list[player_num]=client_fd;
     int err_rcv;
     C2S_message msg;
+    //call thread to refill tokens
+    token_data_struct token_args;
+    token_args.move_tokens=&move_tokens;
+    token_args.t0=&t0;
+    token_args.tf=&tf;
+    pthread_create(&token_refill_thread_id,NULL,token_refill_thread,&token_args);
+    int ret;
     while((err_rcv = recv(client_fd_list[player_num],&msg,sizeof(msg),0))>0 ){
         printf("[Client request] Received %d bytes from client %d \n",err_rcv,player_num);
         // handle message from client
-        update_board(player_num,msg);
-
+        if(move_tokens>0){
+            ret=update_board(player_num,msg);
+            move_tokens=move_tokens-ret;
+        }
+        if(difftime(tf,t0)>30){
+            init_player_position(player_num,1,1);//make player jump to random position and delete previous positions
+            t0=tf;
+        }
     }
 }
 
