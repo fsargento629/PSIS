@@ -58,7 +58,7 @@ int main(int argc,char*argv[]){
                 }          
             }
         }
-        usleep(100*1000);//x miliseconds
+        usleep(10*1000);//x miliseconds
     }
 
     close(server_socket);
