@@ -1,6 +1,6 @@
 #include "common.h"
 #define BOARDTXT "board.txt"
-#define DEFAULT_COLOR 2
+#define DEFAULT_COLOR 3
 #define TOKEN_COOLDOWN 0.5
 #define INACTIVITY_TIME 10 //it is 10 just for debugging 
 #define NO_FRUIT -2
