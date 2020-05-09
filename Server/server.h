@@ -1,6 +1,6 @@
 #include "common.h"
 #define BOARDTXT "board.txt"
-#define DEFAULT_COLOR 1
+#define DEFAULT_COLOR 2
 #define TOKEN_COOLDOWN 0.5
 #define INACTIVITY_TIME 10 //it is 10 just for debugging 
 #define NO_FRUIT -2
@@ -14,7 +14,7 @@ int client_fd_list[MAXPLAYERS];
 int player_connections;
 
 pthread_mutex_t board_lock;
-pthread_mutex_t fd_lock;
+
 
 typedef struct board_data_struct
 {
