@@ -312,17 +312,10 @@ void* token_refill_thread(void*arg){
     int* tokens = token_data->move_tokens;
     gettimeofday(t0,NULL);
     while(1){
-<<<<<<< HEAD
-        time(tf);
-        if(difftime(*tf,*t0)>=TOKEN_COOLDOWN && *tokens<TOKEN_REGEN){
-            *tokens=TOKEN_REGEN;
-            *t0=*tf;
-=======
         gettimeofday(tf,NULL);
         if(time_delta(tf,t0)>=TOKEN_COOLDOWN && *tokens<TOKEN_REGEN){
             *tokens=TOKEN_REGEN;
             gettimeofday(t0,NULL);
->>>>>>> 85717d2478965be905518b3db667f3b1ce64c8c2
         }
     }
 
