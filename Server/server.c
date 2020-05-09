@@ -286,12 +286,12 @@ int update_board(int player_num,C2S_message msg){
     }
 
     // Rule 6 and 7 - Eat cherry
-    else if(type1==PACMAN&&(type2==CHERRY||type2==LEMON)){
+    else if(type1==PACMAN&&type2==CHERRY){
         eat(pos,next_pos,board);
         board[next_pos[1]][next_pos[0]].type=SUPERPACMAN; 
         ret=1;
     }
-    else if((type2==CHERRY||type2==LEMON    )&&(type1==MONSTER||type1==SUPERPACMAN)){
+    else if(type2==CHERRY&&(type1==MONSTER||type1==SUPERPACMAN)){
         eat(pos,next_pos,board);
         ret=1;
     }
@@ -312,8 +312,8 @@ void* token_refill_thread(void*arg){
     time(t0);
     while(1){
         time(tf);
-        if(difftime(*tf,*t0)>=1 && *tokens<2){
-            *tokens=TOKENS_PER_SECOND;
+        if(difftime(*tf,*t0)>=TOKEN_COOLDOWN && *tokens<TOKEN_REGEN){
+            *tokens=TOKEN_REGEN;
             *t0=*tf;
         }
     }
@@ -359,9 +359,6 @@ void* client_thread(void* client_args){
     while((err_rcv = recv(client_fd_list[player_num],&msg,sizeof(msg),0))>0 ){
         printf("[Client request] Received %d bytes from client %d \n",err_rcv,player_num);
         // handle message from client
-<<<<<<< HEAD
-        update_board(player_num,msg);
-=======
         if(move_tokens>0){
             ret=update_board(player_num,msg);
             move_tokens=move_tokens-ret;
@@ -371,7 +368,6 @@ void* client_thread(void* client_args){
             printf("Inactivity jump\n");
             t0=tf;
         }
->>>>>>> 3bc11fa029816f910c990b3789e5ba8ac8274127
     }
 }
 
