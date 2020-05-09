@@ -128,8 +128,10 @@ int send_game_state(int client_fd){
     pthread_mutex_lock(&board_lock);
     for(i=0;i<board_size[1];i++){
             nbytes=send(client_fd,board[i],sizeof(game_object_struct)*board_size[0],0);
-            if(nbytes<=0)
+            if(nbytes<=0){
+                pthread_mutex_unlock(&board_lock);
                 return -1;
+            }
             Nbytes=Nbytes+nbytes;
     }
     pthread_mutex_unlock(&board_lock);
@@ -318,8 +320,6 @@ void* token_refill_thread(void*arg){
             gettimeofday(t0,NULL);
         }
     }
-
-
 }
 
 
@@ -341,11 +341,11 @@ void* client_thread(void* client_args){
     if(success == 0)
         return NULL;
 
-    pthread_mutex_lock(&board_lock);
+
     recv(client_fd,&pacman_color,sizeof(char),0);
     recv(client_fd,&monster_color,sizeof(char),0);
     printf("Player %d colors: %c %c\n",player_num,pacman_color,monster_color);
-
+    pthread_mutex_lock(&board_lock);
     init_player_position(player_num,1,1,pacman_color,monster_color);//initiate player position(player_num,do_player,do_monster)
     pthread_mutex_unlock(&board_lock);
 
@@ -363,7 +363,7 @@ void* client_thread(void* client_args){
     token_args.tf=&tf;
     pthread_create(&token_refill_thread_id,NULL,token_refill_thread,&token_args);
     int ret;
-    while((err_rcv = recv(client_fd_list[player_num],&msg,sizeof(msg),0))>0 ){
+    while((err_rcv = recv(client_fd_list[player_num],&msg,sizeof(msg),0))>0){
         printf("[Client request] Received %d bytes from client %d \n",err_rcv,player_num);
         // handle message from client
         if(move_tokens>0){

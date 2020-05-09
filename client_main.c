@@ -133,15 +133,9 @@ int main(int argc , char* argv[]){
 					printf("x_m=%d|y_m=%d\n",pos[0],pos[1]+1);
 					free(pos);
 				}
-			}
-				
-
-
-			
-						
+			}						
 		}
     }
     printf("\n\nFim\n");
-    close_board_windows();
     exit(0);
 }
