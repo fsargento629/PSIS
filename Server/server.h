@@ -31,7 +31,8 @@ typedef struct client_thread_args
 typedef struct token_data_struct
 {
   int* move_tokens;
-  time_t* t0,*tf;
+  struct timeval* t0;
+  struct timeval* tf;
 }token_data_struct;
 
 typedef struct fruit_thread_args

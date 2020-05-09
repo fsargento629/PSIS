@@ -8,6 +8,7 @@
 #include"server.h"
 #include <sys/un.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 
 
@@ -219,4 +220,12 @@ void eat(int* predator,int*prey,game_object_struct** board){
     //clear the predator spot
     clear_board_cell(predator[0],predator[1],board);
 
+}
+
+
+//returns time_diff in seconds
+double time_delta(struct timeval* tf,struct timeval* t0  ){
+    double delta;
+    delta=(tf->tv_sec - t0->tv_sec)+((tf->tv_usec - t0->tv_usec)/1000.0/1000.0);
+    return delta;
 }

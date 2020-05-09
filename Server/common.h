@@ -49,3 +49,5 @@ void closest_square(int x,int y,int* next_pos,int size_x,int size_y,game_object_
 int bounce_back(int* pos1,int* pos2,game_object_struct** board,int size_x,int size_y);
 void switch_places(int* pos,int* next_pos,game_object_struct** board);
 void eat(int* predator,int*prey,game_object_struct** board);
+
+double time_delta(struct timeval* tf,struct timeval* t0  );

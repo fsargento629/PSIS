@@ -9,6 +9,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/time.h>
 
 
 
@@ -304,17 +305,24 @@ int update_board(int player_num,C2S_message msg){
 }
 
 void* token_refill_thread(void*arg){
-    printf("Entered\n");
+    //printf("Entered\n");
     token_data_struct* token_data= (token_data_struct*)arg;
-    time_t* t0=token_data->t0;
-    time_t* tf=token_data->tf;
+    struct timeval* t0=token_data->t0;
+    struct timeval* tf=token_data->tf;
     int* tokens = token_data->move_tokens;
-    time(t0);
+    gettimeofday(t0,NULL);
     while(1){
+<<<<<<< HEAD
         time(tf);
         if(difftime(*tf,*t0)>=TOKEN_COOLDOWN && *tokens<TOKEN_REGEN){
             *tokens=TOKEN_REGEN;
             *t0=*tf;
+=======
+        gettimeofday(tf,NULL);
+        if(time_delta(tf,t0)>=TOKEN_COOLDOWN && *tokens<TOKEN_REGEN){
+            *tokens=TOKEN_REGEN;
+            gettimeofday(t0,NULL);
+>>>>>>> 85717d2478965be905518b3db667f3b1ce64c8c2
         }
     }
 
@@ -326,7 +334,8 @@ void* token_refill_thread(void*arg){
 // Thread that receives updates from each client and triggers an event (?)
 void* client_thread(void* client_args){
     pthread_t token_refill_thread_id;
-    time_t t0,tf; //to store last time the tokens were refilled
+    struct timeval t0; //to store last time the tokens were refilled
+    struct timeval tf;
     int move_tokens=2;//player receives 2 tokens per second
     client_thread_args args = *(client_thread_args*)client_args;
     int client_fd=args.fd;
@@ -338,16 +347,21 @@ void* client_thread(void* client_args){
 
     if(success == 0)
         return NULL;
+
     pthread_mutex_lock(&board_lock);
     recv(client_fd,&pacman_color,sizeof(char),0);
     recv(client_fd,&monster_color,sizeof(char),0);
     printf("Player %d colors: %c %c\n",player_num,pacman_color,monster_color);
+
     init_player_position(player_num,1,1,pacman_color,monster_color);//initiate player position(player_num,do_player,do_monster)
     pthread_mutex_unlock(&board_lock);
+
     printf("Sending initial message to player %d\n",player_num);
     send_initial_message(client_fd,player_num); 
     client_fd_list[player_num]=client_fd;
     int err_rcv;
+
+
     C2S_message msg;
     //call thread to refill tokens
     token_data_struct token_args;
@@ -363,10 +377,11 @@ void* client_thread(void* client_args){
             ret=update_board(player_num,msg);
             move_tokens=move_tokens-ret;
         }
-        if(difftime(tf,t0)>30){
+        if(time_delta(&tf,&t0)>=30){
             init_player_position(player_num,1,1,pacman_color,monster_color);//make player jump to random position and delete previous positions
             printf("Inactivity jump\n");
-            t0=tf;
+            //t0=tf;
+            gettimeofday(&t0,NULL);
         }
     }
 }
@@ -454,8 +469,8 @@ void* fruit_thread(void*arg){
     int i,j;
     //initialize every position at -2, to signal empty;
     for(i=0;i<2*(MAXPLAYERS-1);i++){
-        fruit_vector[i].x=-2;
-        fruit_vector[i].y=-2;
+        fruit_vector[i].x=NO_FRUIT;
+        fruit_vector[i].y=NO_FRUIT;
     }
     int active_fruits=0;
     
@@ -470,11 +485,11 @@ void* fruit_thread(void*arg){
                 
             } while (generate_fruit(x,y,type,board)==0);
             i=0;
-            while(fruit_vector[i].x!=-2)//find 1st empty vector position
+            while(fruit_vector[i].x!=NO_FRUIT)//find 1st empty vector position
                 i++;
             fruit_vector[i].x=x;
             fruit_vector[i].y=y;
-            printf("%d;generated a fruit\n",active_fruits);
+            //printf("%d;generated a fruit\n",active_fruits);
             active_fruits++;
 
         }
@@ -484,7 +499,7 @@ void* fruit_thread(void*arg){
         for(i=0;i<2*(MAXPLAYERS-1);i++){
             if(fruit_vector[i].x==FRUIT_WAITING){
                 //check timer
-                if(difftime(tf,fruit_vector[i].t0)>2){
+                if(difftime(tf,fruit_vector[i].t0)>=2){
                     //generate fruit and save it in the fruit vector
                     type=rand()%2+CHERRY;
                      do
