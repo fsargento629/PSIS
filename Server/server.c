@@ -286,12 +286,12 @@ int update_board(int player_num,C2S_message msg){
     }
 
     // Rule 6 and 7 - Eat cherry
-    else if(type1==PACMAN&&type2==CHERRY){
+    else if(type1==PACMAN&&(type2==CHERRY||type2==LEMON)){
         eat(pos,next_pos,board);
         board[next_pos[1]][next_pos[0]].type=SUPERPACMAN; 
         ret=1;
     }
-    else if(type2==CHERRY&&(type1==MONSTER||type1==SUPERPACMAN)){
+    else if((type2==CHERRY||type2==LEMON    )&&(type1==MONSTER||type1==SUPERPACMAN)){
         eat(pos,next_pos,board);
         ret=1;
     }

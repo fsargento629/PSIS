@@ -15,7 +15,7 @@ int main(int argc , char* argv[]){
         exit(-1);
     }
 	char pacman_color=*argv[3];
-	char monster_color=*argv[4];
+	char monster_color=*argv[4];	
 	int *pos;
 	int nbytes;
     Uint32 Event_screen_refresh;
