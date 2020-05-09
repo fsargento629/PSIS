@@ -13,7 +13,7 @@
 
 
 
-int init_player_position(int player_num,int do_pacman,int do_monster){
+int init_player_position(int player_num,int do_pacman,int do_monster,int pacman_color,int monster_color){
     //give the player a pacman and a monster in random, not filled position:
     int x=0,y=0;
     int *pos;
@@ -33,7 +33,7 @@ int init_player_position(int player_num,int do_pacman,int do_monster){
         board[y][x].type=1;
         board[y][x].pos[0]=x;
         board[y][x].pos[1]=y;
-        board[y][x].color=1;
+        board[y][x].color=pacman_color;
         
         
     }
@@ -54,7 +54,7 @@ int init_player_position(int player_num,int do_pacman,int do_monster){
         board[y][x].type=2;
         board[y][x].pos[0]=x;
         board[y][x].pos[1]=y;
-        board[y][x].color=1;
+        board[y][x].color=monster_color;
     }
         
    
@@ -147,6 +147,7 @@ int send_initial_message(int client_fd,int player_num){
     1) Send player_num and board size to client
     2) Send board to client, line by line by calling the function send_game_state
     3) send  the scores
+    4) receive player colors (2 chars)
     
     */
 
@@ -262,25 +263,25 @@ int update_board(int player_num,C2S_message msg){
     else if(type1==MONSTER&&type2==PACMAN){
         eat(pos,next_pos,board);
         game_state.scores[player1]++;
-        init_player_position(player2,1,0);
+        init_player_position(player2,1,0,board[next_pos[1]][next_pos[0]].color,0);
         ret=1;
     }
     else if(type1==PACMAN&&type2==MONSTER){
         eat(next_pos,pos,board);
         game_state.scores[player2]++;
-        init_player_position(player1,1,0);
+        init_player_position(player1,1,0,board[pos[1]][pos[0]].color,0);//do only pacman
         ret=1;
     }
     else if(type1==SUPERPACMAN&&type2==MONSTER){
         eat(pos,next_pos,board);
         game_state.scores[player1]++;
-        init_player_position(player2,0,1);
+        init_player_position(player2,0,1,0,board[pos[1]][pos[0]].color);//do monster
         ret=1;
     }
     else if(type1==MONSTER&&type2==SUPERPACMAN){
         eat(next_pos,pos,board);
         game_state.scores[player2]++;
-        init_player_position(player1,0,1);
+        init_player_position(player1,0,1,0,board[pos[1]][pos[0]].color);//do only monster
         ret=1;
     }
 
@@ -330,7 +331,7 @@ void* client_thread(void* client_args){
     client_thread_args args = *(client_thread_args*)client_args;
     int client_fd=args.fd;
     int player_num=args.player_num;
-    
+    char pacman_color,monster_color;
     int success;
     success = args.success;
     send(client_fd,&success, sizeof(success),0);
@@ -338,7 +339,10 @@ void* client_thread(void* client_args){
     if(success == 0)
         return NULL;
     pthread_mutex_lock(&board_lock);
-    init_player_position(player_num,1,1);//initiate player position(player_num,do_player,do_monster)
+    recv(client_fd,&pacman_color,sizeof(char),0);
+    recv(client_fd,&monster_color,sizeof(char),0);
+    printf("Player %d colors: %c %c\n",player_num,pacman_color,monster_color);
+    init_player_position(player_num,1,1,pacman_color,monster_color);//initiate player position(player_num,do_player,do_monster)
     pthread_mutex_unlock(&board_lock);
     printf("Sending initial message to player %d\n",player_num);
     send_initial_message(client_fd,player_num); 
@@ -360,7 +364,7 @@ void* client_thread(void* client_args){
             move_tokens=move_tokens-ret;
         }
         if(difftime(tf,t0)>30){
-            init_player_position(player_num,1,1);//make player jump to random position and delete previous positions
+            init_player_position(player_num,1,1,pacman_color,monster_color);//make player jump to random position and delete previous positions
             printf("Inactivity jump\n");
             t0=tf;
         }
@@ -375,6 +379,7 @@ void* accept_thread(void* arg){
     socklen_t size_addr = sizeof(client_addr);
     pthread_t client_thread_ids[MAXPLAYERS];
     int client_fd;
+
 
     if(listen(server_socket,MAXPLAYERS)==-1){
         perror("listen");
@@ -446,7 +451,7 @@ void* fruit_thread(void*arg){
     int x,y,type;
     game_object_struct** board=args.board;
     fruit_struct* fruit_vector=calloc(2*(MAXPLAYERS-1),sizeof(fruit_struct));
-    int i;
+    int i,j;
     //initialize every position at -2, to signal empty;
     for(i=0;i<2*(MAXPLAYERS-1);i++){
         fruit_vector[i].x=-2;
@@ -477,7 +482,7 @@ void* fruit_thread(void*arg){
           //see if any fruit is missing
         time(&tf);//save crurrent time in tf
         for(i=0;i<2*(MAXPLAYERS-1);i++){
-            if(fruit_vector[i].x==-1){
+            if(fruit_vector[i].x==FRUIT_WAITING){
                 //check timer
                 if(difftime(tf,fruit_vector[i].t0)>2){
                     //generate fruit and save it in the fruit vector
@@ -489,26 +494,26 @@ void* fruit_thread(void*arg){
                             
                         } while (generate_fruit(x,y,type,board)==0);
                         
-                        i=0;
-                        while(fruit_vector[i].x!=-2)//find 1st empty vector position
-                            i++;
+                        j=0;
+                        while(fruit_vector[j].x!=NO_FRUIT)//find 1st empty vector position
+                            j++;
                         fruit_vector[i].x=x;
                         fruit_vector[i].y=y;
-                        active_fruits++;
+                        //active_fruits++;
 
                 }
 
             }
-            else if(fruit_vector[i].x==-2)
+            else if(fruit_vector[i].x==NO_FRUIT)
                 continue;//-2 implies there is no fruit
 
 
             else if(board[fruit_vector[i].y][fruit_vector[i].x].type!=CHERRY &&
             board[fruit_vector[i].y][fruit_vector[i].x].type!=LEMON){
 
-                if(active_fruits>=(2*(player_connections-1))){//there are too many fruits
-                    fruit_vector[i].x=-2;
-                    fruit_vector[i].y=-2;
+                if(active_fruits>(2*(player_connections-1))){//there are too many fruits
+                    fruit_vector[i].x=NO_FRUIT;
+                    fruit_vector[i].y=NO_FRUIT;
                     active_fruits--;
                     
 
@@ -516,8 +521,8 @@ void* fruit_thread(void*arg){
                 //start timer for that fruit, if there are not too many fruits already
                 else {
                     time(&fruit_vector[i].t0);
-                    fruit_vector[i].x=-1;
-                    fruit_vector[i].y=-1;
+                    fruit_vector[i].x=FRUIT_WAITING;
+                    fruit_vector[i].y=FRUIT_WAITING;
                 }
             }
         }

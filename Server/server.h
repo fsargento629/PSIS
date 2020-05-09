@@ -2,6 +2,10 @@
 #define BOARDTXT "board.txt"
 #define DEFAULT_COLOR 1
 #define TOKENS_PER_SECOND 2
+
+#define NO_FRUIT -2
+#define FRUIT_WAITING -1
+
 game_state_struct game_state;
 game_object_struct** board;
 int board_size[2];
@@ -56,8 +60,8 @@ int init_server();//
 void* accept_thread(void* arg);//
 void* client_thread(void* arg);//
 int update_board(int player,C2S_message msg);
-int send_initial_message(int client_fd,int player_num);//
-int init_player_position(int player_num,int do_pacman,int do_monster);
+int send_initial_message(int client_fd,int player_num);
+int init_player_position(int player_num,int do_pacman,int do_monster,int pacman_color,int monster_color);
 int update_clients();//
 int send_game_state(int client_fd);//
 void* token_refill_thread(void*arg);

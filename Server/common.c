@@ -10,6 +10,8 @@
 #include <unistd.h>
 
 
+
+
 void signal_kill_handler( int signum){
     printf("Shutting down due to Ctrl-C signal\n");
     exit(0);
@@ -132,21 +134,23 @@ void closest_square(int x,int y,int* next_pos,int size_x,int size_y,game_object_
         else
             next_pos[0]=0;
     }
-    else if(next_pos[0]>size_x){
-        if(is_empty(size_x-1,next_pos[1],board))
-            next_pos[0]=size_x-1;
+    else if(next_pos[0]>=size_x){
+        if(is_empty(size_x-2,next_pos[1],board))
+            next_pos[0]=size_x-2;
         else
-            next_pos[0]=size_x;
+            next_pos[0]=size_x-1;
     }
     else if(next_pos[1]<0){
         if(is_empty(next_pos[0],1,board))
             next_pos[1]=1;
-        next_pos[1]=0;
+        else
+            next_pos[1]=0;
     }
-    else if(next_pos[1]>size_y){
-        if(is_empty(next_pos[0],size_y-1,board))
+    else if(next_pos[1]>=size_y){
+        if(is_empty(next_pos[0],size_y-2,board))
+            next_pos[1]=size_y-2;
+        else
             next_pos[1]=size_y-1;
-        next_pos[1]=size_y;
     }
 
     /*if(next_pos[0]<0)
@@ -172,7 +176,7 @@ int bounce_back(int* pos1,int* pos2,game_object_struct** board,int size_x,int si
     bounce_x=pos1[0]-delta_pos[0];
     bounce_y=pos1[1]-delta_pos[1];
     //If bounce point is a possibility, bounce to it, otherwise, dont do it
-    if(bounce_x>=0&&bounce_x<=size_x&&bounce_y>=0&&bounce_y<=size_y){
+    if(bounce_x>=0&&bounce_x<size_x&&bounce_y>=0&&bounce_y<size_y){
         pos2[0]=bounce_x;
         pos2[1]=bounce_y;      
         return 1; //used 1 movement token

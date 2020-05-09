@@ -49,7 +49,7 @@ int receive_game_state(game_state_struct* game_state,int socket_fd){
     3) Receive the scores (Also given by receive_game_state)
     
     */
-int setup_comm(char* server_ip,char* port,game_state_struct* game_state){
+int setup_comm(char* server_ip,char* port,game_state_struct* game_state,char *pacman_color,char *monster_color){
     int nbytes,Nbytes=0;
     setup_message msg;
     struct sockaddr_in server_addr;
@@ -58,6 +58,7 @@ int setup_comm(char* server_ip,char* port,game_state_struct* game_state){
 		perror("socket: ");
 		exit(-1);
     }
+
 
 	server_addr.sin_family = AF_INET;
 	int port_number;
@@ -89,8 +90,19 @@ int setup_comm(char* server_ip,char* port,game_state_struct* game_state){
         close(sock_fd);
         exit(-1);
     }
-    
 
+    //Send colors:
+    nbytes=send(sock_fd,pacman_color,sizeof(char),0);
+    if(nbytes<=0){
+        printf("Unable to send pacman color\n");
+        exit(-1);
+    }
+    nbytes=send(sock_fd,monster_color,sizeof(char),0);
+    if(nbytes<=0){
+        printf("Unable to send monster color\n");
+        exit(-1);
+    }
+    printf("Colors sent to server\n");
     //Initiating setup protocol
     nbytes = recv(sock_fd ,&msg , sizeof(setup_message),0); 
     printf("[Setup] Received %d bytes from server (1/2)\n",nbytes);
@@ -133,11 +145,11 @@ void* sock_thread(void* args_pt){
             exit(0);
         }
 
-        printf("[Socket thread] Received %d bytes from server\n",nbytes);
+        //printf("[Socket thread] Received %d bytes from server\n",nbytes);
         SDL_zero(new_event);
         new_event.type = arg->Event_screen_refresh;
         new_event.user.data1=new_game_state;
-        printf("Sent event to main\n");
+        //printf("Sent event to main\n");
         SDL_PushEvent(&new_event);
     }    
 }
@@ -145,13 +157,15 @@ void* sock_thread(void* args_pt){
 
 //draw an object
 void draw_object(game_object_struct object,int x, int y){
+
+    int*color=char2color(object.color);
     if(object.type==0)//empty
         clear_place(x,y);
 
-    int color[3]={0,0,0};
-    color[object.color]=255;
+    
+    
 
-    if(object.type==PACMAN)//pacman
+    else if(object.type==PACMAN)//pacman
         paint_pacman(x,y,color[0],color[1],color[2]);
 
     else if(object.type==MONSTER)//mosnter
@@ -200,5 +214,63 @@ void update_screen(game_object_struct** old_board,game_object_struct** new_board
         }
     }
 
+    
+}
+
+int* char2color(char color){
+    int* output=calloc(3,sizeof(int));
+
+    if(color=='r'){//red
+        output[0]=255;
+        output[1]=0;
+        output[2]=0;
+        return output;
+    }
+
+    else if(color=='g'){//green
+        output[0]=0;
+        output[1]=255;
+        output[2]=0;
+        return output;
+    }
+
+    else if(color=='c'){//cyan
+        output[0]=0;
+        output[1]=0;
+        output[2]=255;
+        return output;
+    }
+
+    else if(color=='b'){//black
+        output[0]=255;
+        output[1]=255;
+        output[2]=255;
+        return output;
+    }
+
+    else if(color=='y'){//yellow
+        output[0]=255;
+        output[1]=255;
+        output[2]=0;
+        return output;
+    }
+
+    else if(color=='o'){//orange
+        output[0]=255;
+        output[1]=140;
+        output[2]=0;
+        return output;
+    }
+    if(color=='b'){//black
+        output[0]=255;
+        output[1]=255;
+        output[2]=255;
+        return output;
+    }
+    else{
+        output[0]=255;
+        output[1]=0;
+        output[2]=0;
+    }
     
 }
