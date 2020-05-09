@@ -2,9 +2,14 @@
 #define MAXOBJECTS 100
 #define DEFAULT_SERVER_IP "192.168.5.66"
 #define DEFAULT_SERVER_PORT 3000
-
+#define EMPTY 0
+#define PACMAN 1
+#define MONSTER 2
+#define BRICK 3
+#define CHERRY 4
+#define SUPERPACMAN 5
 typedef struct game_object_struct{
-    int type;// 0-> empty ;1->pacman;2->mosnter;3->brick;4->cherry;5->lemon
+    int type;// 0-> empty ;1->pacman;2->mosnter;3->brick;4->cherry;5->lemon;6->superpac
     int color;
     int pos[2];
     int player;
@@ -38,3 +43,7 @@ void clear_board_cell(int x,int y,game_object_struct** board);
 int* find_object(int player,int type,game_object_struct** board,int size_x,int size_y);
 int objects_are_different(game_object_struct obj1,game_object_struct obj2);
 void printf_game_state(int size_x,int size_y,game_state_struct* game);
+void closest_square(int x,int y,int* next_pos,int size_x,int size_y,game_object_struct** board);
+int bounce_back(int* pos1,int* pos2,game_object_struct** board,int size_x,int size_y);
+void switch_places(int* pos,int* next_pos,game_object_struct** board);
+void eat(int* predator,int*prey,game_object_struct** board);

@@ -10,12 +10,12 @@
 #include <signal.h>
 
 int main(int argc , char* argv[]){
-	//int pacman_id,monster_id;
+	int *pos;
 	int nbytes;
     Uint32 Event_screen_refresh;
 	SDL_Event event;
 	int done = 0;
-	int x,y;
+	int x,y,x_new,y_new;;
 	pthread_t sock_thread_ID;
 	Event_screen_refresh =  SDL_RegisterEvents(1);
 	game_state_struct* game_state,* new_game_state;
@@ -52,6 +52,10 @@ int main(int argc , char* argv[]){
             if(event.type==Event_screen_refresh && screen_ready==1){//server has sent a message
 				screen_ready=0;
                 new_game_state=event.user.data1;// receives a new game_state struct
+				pos=find_object(player_id,PACMAN,game_state->board,board_size[0],board_size[1]);
+				x=pos[0];
+				y=pos[1];
+				free(pos);
                 update_screen(game_state->board,new_game_state->board,0); 
 				//printf("Screen updated\n");
 				//free(game_state->board);//delete old board        
@@ -67,18 +71,53 @@ int main(int argc , char* argv[]){
 
             if(event.type==SDL_MOUSEMOTION){
                 //Send info about pacman to server
-				int x_new,y_new;
+				
 				get_board_place(event.motion.x,event.motion.y,&x_new,&y_new);
 				//if the mouse is different, send to server
 				if(x!=x_new || y!=y_new){
 					printf("[[Move request]... ");
-					nbytes=send_move(x_new,y_new,1);//send move request to server
+					nbytes=send_move(x_new,y_new,PACMAN);//send move request to server
 					printf("Sent %d bytes to server\n",nbytes);
-					x=x_new;
-					y=y_new;
+					
 				}
-			//do event for monster				
+		
             }
+
+			if(event.type==SDL_KEYDOWN){
+				if(event.key.keysym.sym==SDLK_LEFT){
+					//left key
+					pos=find_object(player_id,MONSTER,game_state->board,board_size[0],board_size[1]);
+					if(pos[0]!=-1&&pos[1]!=-1)//not found
+						nbytes=send_move(pos[0]-1,pos[1],MONSTER);
+					free(pos);
+				}
+				if(event.key.keysym.sym==SDLK_RIGHT){
+					//right key
+					pos=find_object(player_id,MONSTER,game_state->board,board_size[0],board_size[1]);
+					if(pos[0]!=-1&&pos[1]!=-1)//not found
+						nbytes=send_move(pos[0]+1,pos[1],MONSTER);
+					free(pos);
+				}
+				if(event.key.keysym.sym==SDLK_UP){
+					//up key
+					pos=find_object(player_id,MONSTER,game_state->board,board_size[0],board_size[1]);
+					if(pos[0]!=-1&&pos[1]!=-1)//not found
+						nbytes=send_move(pos[0],pos[1]-1,MONSTER);
+					free(pos);
+				}
+				if(event.key.keysym.sym==SDLK_DOWN){
+					//down key
+					pos=find_object(player_id,MONSTER,game_state->board,board_size[0],board_size[1]);
+					if(pos[0]!=-1&&pos[1]!=-1)// found a match
+						nbytes=send_move(pos[0],pos[1]+1,MONSTER);
+					free(pos);
+				}
+			}
+				//do event for monster	
+
+
+			
+						
 		}
     }
     printf("\n\nFim\n");
