@@ -326,10 +326,12 @@ void* token_refill_thread(void*arg){
 
 // Thread that receives updates from each client and triggers an event (?)
 void* client_thread(void* client_args){
-    pthread_t token_refill_thread_id;
-    struct timeval t0; //to store last time the tokens were refilled
-    struct timeval tf;
-    int move_tokens=2;//player receives 2 tokens per second
+    pthread_t pacman_token_refill_thread_id,monster_token_refill_thread_id;
+    struct timeval t0_pacman; //to store last time the tokens were refilled
+    struct timeval tf_pacman;
+    struct timeval t0_monster; //to store last time the tokens were refilled
+    struct timeval tf_monster;
+    int move_tokens_pacman=TOKEN_REGEN,move_tokens_monster=TOKEN_REGEN;//player receives 1 token each half a second
     client_thread_args args = *(client_thread_args*)client_args;
     int client_fd=args.fd;
     int player_num=args.player_num;
@@ -356,25 +358,36 @@ void* client_thread(void* client_args){
 
 
     C2S_message msg;
-    //call thread to refill tokens
-    token_data_struct token_args;
-    token_args.move_tokens=&move_tokens;
-    token_args.t0=&t0;
-    token_args.tf=&tf;
-    pthread_create(&token_refill_thread_id,NULL,token_refill_thread,&token_args);
+    //call thread to refill tokens for pacman
+    token_data_struct token_args_pacman;
+    token_args_pacman.move_tokens=&move_tokens_pacman;
+    token_args_pacman.t0=&t0_pacman;
+    token_args_pacman.tf=&tf_pacman;
+    token_data_struct token_args_monster;
+    token_args_monster.move_tokens=&move_tokens_monster;
+    token_args_monster.t0=&t0_monster;
+    token_args_monster.tf=&tf_monster;
+
+    pthread_create(&pacman_token_refill_thread_id,NULL,token_refill_thread,&token_args_pacman);
+    pthread_create(&monster_token_refill_thread_id,NULL,token_refill_thread,&token_args_monster);
     int ret;
     while((err_rcv = recv(client_fd_list[player_num],&msg,sizeof(msg),0))>0 ){
         printf("[Client request] Received %d bytes from client %d \n",err_rcv,player_num);
         // handle message from client
-        if(move_tokens>0){
+        if(move_tokens_pacman>0&&(msg.type==PACMAN||msg.type==SUPERPACMAN)){
             ret=update_board(player_num,msg);
-            move_tokens=move_tokens-ret;
+            move_tokens_pacman=move_tokens_pacman-ret;
         }
-        if(time_delta(&tf,&t0)>=30){
+         if(move_tokens_monster>0&&msg.type==MONSTER){
+            ret=update_board(player_num,msg);
+            move_tokens_monster=move_tokens_monster-ret;
+        }
+        if(time_delta(&tf_pacman,&t0_pacman)>=INACTIVITY_TIME&&time_delta(&tf_monster,&t0_monster)>=INACTIVITY_TIME){
             init_player_position(player_num,1,1,pacman_color,monster_color);//make player jump to random position and delete previous positions
             printf("Inactivity jump\n");
             //t0=tf;
-            gettimeofday(&t0,NULL);
+            gettimeofday(&t0_pacman,NULL);
+            gettimeofday(&t0_monster,NULL);
         }
     }
 }
