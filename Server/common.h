@@ -7,10 +7,12 @@
 #define MONSTER 2
 #define BRICK 3
 #define CHERRY 4
-#define SUPERPACMAN 5
+#define LEMON  5
+#define SUPERPACMAN 6
+#define OBJECT_NOT_FOUND -1
 typedef struct game_object_struct{
     int type;// 0-> empty ;1->pacman;2->mosnter;3->brick;4->cherry;5->lemon;6->superpac
-    int color;
+    char color;
     int pos[2];
     int player;
     

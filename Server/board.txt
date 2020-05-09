@@ -1,21 +1,16 @@
-50 20
-                                                  
-                                                  
-                            BBBBBBBB              
-                                   B              
-                B                  B              
-               BB                  B              
-                B                  B              
-                B                  B              
-                B                  B              
-                                   B              
-                  BBBBB            B              
-                      B            B              
-                      BBBBBBBBBBB BB              
- B                                                
-                                                  
-                                                  
-                                                  
-                                                  
-                                                  
-                                                  
+15 15
+               
+               
+ BBBB   B B    
+    BB BB BBB  
+       B       
+BBBBBB BBBBBB  
+            B  
+ B BB  BBBB B  
+BB B      B    
+B         B B  
+B BBB       B  
+BBB B     B B  
+    B     B B  
+    BBBB BB BB 
+               
