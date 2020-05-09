@@ -240,15 +240,15 @@ int* char2color(char color){
     }
 
     else if(color=='b'){//black
-        output[0]=255;
-        output[1]=255;
-        output[2]=255;
+        output[0]=0;
+        output[1]=0;
+        output[2]=0;
         return output;
     }
 
     else if(color=='y'){//yellow
-        output[0]=255;
-        output[1]=255;
+        output[0]=200;
+        output[1]=200;
         output[2]=0;
         return output;
     }

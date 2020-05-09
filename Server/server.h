@@ -3,7 +3,7 @@
 #define DEFAULT_COLOR 1
 #define TOKEN_REGEN 1
 #define TOKEN_COOLDOWN 0.5
-
+#define INACTIVITY_TIME 10 //it is 10 just for debugging 
 #define NO_FRUIT -2
 #define FRUIT_WAITING -1
 
