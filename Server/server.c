@@ -195,7 +195,7 @@ int init_server(){
 //this function updates the board after a client request
 /* 
     Movement Rules:
-    0)If the following block is empt, just move to it, i.e., switch places with it
+    0)If the following block is empty, just move to it, i.e., switch places with it
     1) If there is a brick in the way, bounce back
     2) If two objects of the same player collide, they switch places
     3) If two pacmen, or two monsters, collide, they change places

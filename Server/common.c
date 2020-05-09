@@ -86,19 +86,29 @@ void printf_game_state(int size_x,int size_y,game_state_struct* game){
     printf("----- Printing game state ----\n");
     for(y=0;y<size_y;y++){
         for(x=0;x<size_x;x++){
-            if(game->board[y][x].type==0)
+            switch (game->board[y][x].type)
+            {
+            case EMPTY:
                 printf(" ");
-            else if(game->board[y][x].type==1)
+                break;
+            case BRICK:
+                 printf("B");
+                 break;
+            case PACMAN:
                 printf("P");
-            else if(game->board[y][x].type==2)
+                break;
+            case MONSTER:
                 printf("M");
-            else if(game->board[y][x].type==3)
-                printf("B");
-            else if(game->board[y][x].type==4)
+                break;
+            case CHERRY:
                 printf("C");
-            else if(game->board[y][x].type==5)
+                break;
+            case LEMON:
                 printf("L");
-
+                break;
+            default:
+                break;
+            }
         }
         printf("\n");
     }
@@ -111,6 +121,8 @@ void printf_game_state(int size_x,int size_y,game_state_struct* game){
 void closest_square(int x,int y,int* next_pos,int size_x,int size_y,game_object_struct** board){
     int delta_x=next_pos[0]-x;
     int delta_y=next_pos[1]-y;
+
+    
 
     if(abs(delta_x)>abs(delta_y)){
         if(delta_x<0)
@@ -154,14 +166,6 @@ void closest_square(int x,int y,int* next_pos,int size_x,int size_y,game_object_
             next_pos[1]=size_y-1;
     }
 
-    /*if(next_pos[0]<0)
-        next_pos[0]=0;
-    else if(next_pos[0]>size_x)
-        next_pos=size_x;
-    else if(next_pos[1]<0)
-        next_pos[1]=0;
-    else if(next_pos[1]>size_y)
-        next_pos[1]=size_y;*/
 
 
 }
