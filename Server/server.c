@@ -12,8 +12,6 @@
 #include <sys/time.h>
 
 
-
-
 int init_player_position(int player_num,int do_pacman,int do_monster,int pacman_color,int monster_color){
     //give the player a pacman and a monster in random, not filled position:
     int x=0,y=0;
@@ -120,10 +118,10 @@ board_data_struct read_board_data(char*file_name){
 }
 //function that sends a certain client all the game_state data (board and scores)
 // returns the number of bytes sent
+
 int send_game_state(int client_fd){
     int nbytes,Nbytes=0;
     int i;
-    
     //Send board, line by line:
     pthread_mutex_lock(&board_lock);
     for(i=0;i<board_size[1];i++){
@@ -138,7 +136,6 @@ int send_game_state(int client_fd){
     //Now send the score vector
     nbytes=send(client_fd,game_state.scores,sizeof(int)*MAXPLAYERS,0);
     Nbytes=Nbytes+nbytes;
-
     return Nbytes;
 
 }
@@ -306,32 +303,15 @@ int update_board(int player_num,C2S_message msg){
     return ret;
 }
 
-void* token_refill_thread(void*arg){
-    //printf("Entered\n");
-    token_data_struct* token_data= (token_data_struct*)arg;
-    struct timeval* t0=token_data->t0;
-    struct timeval* tf=token_data->tf;
-    int* tokens = token_data->move_tokens;
-    gettimeofday(t0,NULL);
-    while(1){
-        gettimeofday(tf,NULL);
-        if(time_delta(tf,t0)>=TOKEN_COOLDOWN && *tokens<TOKEN_REGEN){
-            *tokens=TOKEN_REGEN;
-            gettimeofday(t0,NULL);
-        }
-    }
-}
-
-
 
 // Thread that receives updates from each client and triggers an event (?)
 void* client_thread(void* client_args){
-    pthread_t pacman_token_refill_thread_id,monster_token_refill_thread_id;
+
     struct timeval t0_pacman; //to store last time the tokens were refilled
     struct timeval tf_pacman;
     struct timeval t0_monster; //to store last time the tokens were refilled
     struct timeval tf_monster;
-    int move_tokens_pacman=TOKEN_REGEN,move_tokens_monster=TOKEN_REGEN;//player receives 1 token each half a second
+
     client_thread_args args = *(client_thread_args*)client_args;
     int client_fd=args.fd;
     int player_num=args.player_num;
@@ -346,6 +326,7 @@ void* client_thread(void* client_args){
 
     recv(client_fd,&pacman_color,sizeof(char),0);
     recv(client_fd,&monster_color,sizeof(char),0);
+
     printf("Player %d colors: %c %c\n",player_num,pacman_color,monster_color);
     pthread_mutex_lock(&board_lock);
     init_player_position(player_num,1,1,pacman_color,monster_color);//initiate player position(player_num,do_player,do_monster)
@@ -358,34 +339,36 @@ void* client_thread(void* client_args){
 
 
     C2S_message msg;
-    //call thread to refill tokens for pacman
-    token_data_struct token_args_pacman;
-    token_args_pacman.move_tokens=&move_tokens_pacman;
-    token_args_pacman.t0=&t0_pacman;
-    token_args_pacman.tf=&tf_pacman;
-    token_data_struct token_args_monster;
-    token_args_monster.move_tokens=&move_tokens_monster;
-    token_args_monster.t0=&t0_monster;
-    token_args_monster.tf=&tf_monster;
 
-    pthread_create(&pacman_token_refill_thread_id,NULL,token_refill_thread,&token_args_pacman);
-    pthread_create(&monster_token_refill_thread_id,NULL,token_refill_thread,&token_args_monster);
     int ret;
+
+    //Initialise times
+    gettimeofday(&t0_pacman, NULL);
+    gettimeofday(&t0_monster, NULL); 
+
+
     while((err_rcv = recv(client_fd_list[player_num],&msg,sizeof(msg),0))>0){
+        
+        gettimeofday(&tf_pacman, NULL);
+        gettimeofday(&tf_monster, NULL);
+
         printf("[Client request] Received %d bytes from client %d \n",err_rcv,player_num);
         // handle message from client
-        if(move_tokens_pacman>0&&(msg.type==PACMAN||msg.type==SUPERPACMAN)){
-            ret=update_board(player_num,msg);
-            move_tokens_pacman=move_tokens_pacman-ret;
+        if(time_delta(&tf_pacman, &t0_pacman) >= TOKEN_COOLDOWN && (msg.type == PACMAN || msg.type == SUPERPACMAN)){
+            ret = update_board(player_num,msg);
+            if(ret == 1)
+                gettimeofday(&t0_pacman, NULL);
         }
-         if(move_tokens_monster>0&&msg.type==MONSTER){
-            ret=update_board(player_num,msg);
-            move_tokens_monster=move_tokens_monster-ret;
+
+         if(time_delta(&tf_monster, &t0_monster) >= TOKEN_COOLDOWN && msg.type==MONSTER){
+             ret = update_board(player_num,msg);
+            if(ret == 1)
+                gettimeofday(&t0_monster, NULL);
         }
+
         if(time_delta(&tf_pacman,&t0_pacman)>=INACTIVITY_TIME&&time_delta(&tf_monster,&t0_monster)>=INACTIVITY_TIME){
             init_player_position(player_num,1,1,pacman_color,monster_color);//make player jump to random position and delete previous positions
             printf("Inactivity jump\n");
-            //t0=tf;
             gettimeofday(&t0_pacman,NULL);
             gettimeofday(&t0_monster,NULL);
         }

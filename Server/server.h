@@ -1,7 +1,6 @@
 #include "common.h"
 #define BOARDTXT "board.txt"
 #define DEFAULT_COLOR 1
-#define TOKEN_REGEN 1
 #define TOKEN_COOLDOWN 0.5
 #define INACTIVITY_TIME 10 //it is 10 just for debugging 
 #define NO_FRUIT -2
@@ -13,7 +12,10 @@ int board_size[2];
 int client_fd_list[MAXPLAYERS];
 
 int player_connections;
+
 pthread_mutex_t board_lock;
+pthread_mutex_t fd_lock;
+
 typedef struct board_data_struct
 {
    int board_size[2];
@@ -28,12 +30,6 @@ typedef struct client_thread_args
    int success;
 }client_thread_args;
 
-typedef struct token_data_struct
-{
-  int* move_tokens;
-  struct timeval* t0;
-  struct timeval* tf;
-}token_data_struct;
 
 typedef struct fruit_thread_args
 {
