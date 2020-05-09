@@ -1,7 +1,8 @@
 #include "common.h"
 #define BOARDTXT "board.txt"
 #define DEFAULT_COLOR 1
-#define TOKENS_PER_SECOND 2
+#define TOKEN_REGEN 1
+#define TOKEN_COOLDOWN 0.5
 
 #define NO_FRUIT -2
 #define FRUIT_WAITING -1
@@ -30,7 +31,8 @@ typedef struct client_thread_args
 typedef struct token_data_struct
 {
   int* move_tokens;
-  time_t* t0,*tf;
+  struct timeval* t0;
+  struct timeval* tf;
 }token_data_struct;
 
 typedef struct fruit_thread_args
