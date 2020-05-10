@@ -208,6 +208,7 @@ int init_server(){
 // Updates the board, given a message from the client, and returns the amount of movement tokens used
 int update_board(int player_num,C2S_message msg){
     int* pos,*next_pos;
+    char aux_color;
     int ret=0;//amount of movement tokens used
     //find matching pacman or moster and update its position
     pthread_mutex_lock(&board_lock);
@@ -261,27 +262,31 @@ int update_board(int player_num,C2S_message msg){
   
     //Rule 4 and 5- Monster eats pacman and superpacman eats monster
     else if(type1==MONSTER&&type2==PACMAN){
+        aux_color=board[next_pos[1]][next_pos[0]].color;
         eat(pos,next_pos,board);
         game_state.scores[player1]++;
-        init_player_position(player2,1,0,board[next_pos[1]][next_pos[0]].color,0);
+        init_player_position(player2,1,0,aux_color,0);
         ret=1;
     }
     else if(type1==PACMAN&&type2==MONSTER){
+        aux_color=board[pos[1]][pos[0]].color;
         eat(next_pos,pos,board);
         game_state.scores[player2]++;
-        init_player_position(player1,1,0,board[pos[1]][pos[0]].color,0);//do only pacman
+        init_player_position(player1,1,0,aux_color,0);//do only pacman
         ret=1;
     }
     else if(type1==SUPERPACMAN&&type2==MONSTER){
+        aux_color=board[next_pos[1]][next_pos[0]].color;
         eat(pos,next_pos,board);
         game_state.scores[player1]++;
-        init_player_position(player2,0,1,0,board[pos[1]][pos[0]].color);//do monster
+        init_player_position(player2,0,1,0,aux_color);//do monster
         ret=1;
     }
     else if(type1==MONSTER&&type2==SUPERPACMAN){
+        aux_color=board[pos[1]][pos[0]].color;
         eat(next_pos,pos,board);
         game_state.scores[player2]++;
-        init_player_position(player1,0,1,0,board[pos[1]][pos[0]].color);//do only monster
+        init_player_position(player1,0,1,0,aux_color);//do only monster
         ret=1;
     }
 
