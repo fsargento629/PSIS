@@ -133,6 +133,7 @@ void* sock_thread(void* args_pt){
 
     //loop receiving messages from the server and refreshing main thread 
     while(disconnect==0){
+        usleep(SOCKTHREAD_USLEEP*1000);
         new_game_state=malloc(sizeof(game_state_struct));//aloocate space for new_game_state
         //printf("Entering receive_game_state\n");
         nbytes=receive_game_state(new_game_state,socket_fd);

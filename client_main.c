@@ -53,6 +53,7 @@ int main(int argc , char* argv[]){
     while(!done){
 
         while (SDL_PollEvent(&event)) {
+			usleep(CLIENT_SLEEP*1000);
 			if(event.type == SDL_QUIT) {
 					done = SDL_TRUE;
 			}

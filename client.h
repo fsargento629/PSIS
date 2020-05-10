@@ -1,6 +1,7 @@
 #define SERVER_ADDRESS "192.168.5.66"
 #define SERVER_PORT 3000
-
+#define CLIENT_SLEEP 1
+#define SOCKTHREAD_USLEEP 1
 
 //socket thread receive game_state from server.
 typedef struct socket_thread_args{
