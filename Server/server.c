@@ -254,7 +254,7 @@ int update_board(int player_num,C2S_message msg){
 
     //Rule 3-two pacmen or two monster collide-> they switch places
     
-    else if((type1==type2)&&(type1==PACMAN||type1==MONSTER||type1==SUPERPACMAN)){//both are pacmen, superpcamen or monsters
+    else if(  ((type1==type2)&&(type1==PACMAN||type1==MONSTER||type1==SUPERPACMAN)) || (type1==PACMAN&&type2==SUPERPACMAN)||(type1==SUPERPACMAN&&type2==PACMAN)  ){//both are pacmen, superpcamen or monsters
         switch_places(pos,next_pos,board);
         ret=1;
         
