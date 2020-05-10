@@ -13,6 +13,7 @@
 
  
 int main(int argc,char*argv[]){
+    srand(time(0)); 
     player_connections = 0; 
     int i,nbytes;
     pthread_t accept_thread_id,fruit_thread_id;
