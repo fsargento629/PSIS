@@ -426,7 +426,7 @@ void* accept_thread(void* arg){
         client_data.player_num = i;      
         pthread_create(&client_thread_ids[i],NULL,client_thread,&client_data);
 
-        usleep(1000);
+        usleep(ACCEPT_THREAD_SLEEP*1000);
     }
 
 }
@@ -470,6 +470,7 @@ void* fruit_thread(void*arg){
     
     time_t tf;
     while(1){
+        usleep(FRUIT_THREAD_SLEEP*1000);
         if(active_fruits<(2*(player_connections-1))){
             type=rand()%2+CHERRY;//generates rand num between CHERRY and LEMON
             do
@@ -491,7 +492,11 @@ void* fruit_thread(void*arg){
           //see if any fruit is missing
         time(&tf);//save crurrent time in tf
         for(i=0;i<2*(MAXPLAYERS-1);i++){
-            if(fruit_vector[i].x==FRUIT_WAITING){
+
+            if(fruit_vector[i].x==NO_FRUIT)
+                continue;//-2 implies there is no fruit
+
+            else if(fruit_vector[i].x==FRUIT_WAITING){
                 //check timer
                 if(difftime(tf,fruit_vector[i].t0)>=2){
                     //generate fruit and save it in the fruit vector
@@ -513,8 +518,7 @@ void* fruit_thread(void*arg){
                 }
 
             }
-            else if(fruit_vector[i].x==NO_FRUIT)
-                continue;//-2 implies there is no fruit
+            
 
 
             else if(board[fruit_vector[i].y][fruit_vector[i].x].type!=CHERRY &&

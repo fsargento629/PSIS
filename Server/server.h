@@ -5,7 +5,8 @@
 #define INACTIVITY_TIME 10 //it is 10 just for debugging 
 #define NO_FRUIT -2
 #define FRUIT_WAITING -1
-
+#define ACCEPT_THREAD_SLEEP 500 //in milliseconds
+#define FRUIT_THREAD_SLEEP 200
 game_state_struct game_state;
 game_object_struct** board;
 int board_size[2];
