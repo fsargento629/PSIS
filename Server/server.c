@@ -214,7 +214,7 @@ int update_board(int player_num,C2S_message msg){
     pthread_mutex_lock(&board_lock);
     pos=find_object(player_num,msg.type,board,board_size[0],board_size[1]);
 
-    if(pos[0]==-1 || pos[1]==-1){//if object is not found, exit function
+    if(pos[0]==OBJECT_NOT_FOUND|| pos[1]==OBJECT_NOT_FOUND){//if object is not found, exit function
         pthread_mutex_unlock(&board_lock);
         free(pos);
         return 0 ;
@@ -280,6 +280,9 @@ int update_board(int player_num,C2S_message msg){
         eat(pos,next_pos,board);
         game_state.scores[player1]++;
         init_player_position(player2,0,1,0,aux_color);//do monster
+        superpacman_tokens[player1]--;
+        if(superpacman_tokens[player1]<=0)
+            board[next_pos[1]][next_pos[0]].type=PACMAN;
         ret=1;
     }
     else if(type1==MONSTER&&type2==SUPERPACMAN){
@@ -287,6 +290,9 @@ int update_board(int player_num,C2S_message msg){
         eat(next_pos,pos,board);
         game_state.scores[player2]++;
         init_player_position(player1,0,1,0,aux_color);//do only monster
+        superpacman_tokens[player2]--;
+        if(superpacman_tokens[player2]<=0)
+            board[next_pos[1]][next_pos[0]].type=PACMAN;
         ret=1;
     }
 
@@ -294,6 +300,7 @@ int update_board(int player_num,C2S_message msg){
     else if(type1==PACMAN&&(type2==CHERRY||type2==LEMON)){
         eat(pos,next_pos,board);
         board[next_pos[1]][next_pos[0]].type=SUPERPACMAN; 
+        superpacman_tokens[player1]=SUPERPACMAN_IMMUNITY;
         ret=1;
     }
     else if((type2==CHERRY||type2==LEMON)&&(type1==MONSTER||type1==SUPERPACMAN)){

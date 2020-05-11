@@ -7,11 +7,12 @@
 #define FRUIT_WAITING -1
 #define ACCEPT_THREAD_SLEEP 500 //in milliseconds
 #define FRUIT_THREAD_SLEEP 200
+#define SUPERPACMAN_IMMUNITY 2
 game_state_struct game_state;
 game_object_struct** board;
 int board_size[2];
 int client_fd_list[MAXPLAYERS];
-
+int superpacman_tokens[MAXPLAYERS];
 int player_connections;
 
 pthread_mutex_t board_lock;
