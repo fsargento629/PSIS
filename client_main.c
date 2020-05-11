@@ -70,9 +70,9 @@ int main(int argc , char* argv[]){
 					pacman_or_superpacman=PACMAN;
 				}
 				
-				x=pos[0];
-				y=pos[1];
-				free(pos);
+				//x=pos[0];
+				//y=pos[1];
+				
                 update_screen(game_state->board,new_game_state->board,0); 
 				//printf("Screen updated\n");
 				//free(game_state->board);//delete old board        
@@ -80,13 +80,22 @@ int main(int argc , char* argv[]){
 				free(game_state);
 				//printf("freed game_state\n");
               	game_state=new_game_state;
-				//printf("Updated game_state\n");				
-				//usleep(100*1000);
 				screen_ready=1;
-				//printf("Screen ready\n");
+				//send move to server, if pacman position is different than mouse position
+				SDL_GetMouseState(&x,&y);
+            	get_board_place(x, y, &x_new, &y_new);
+				if (x_new!=pos[0]||y_new!=pos[1])
+				{
+					//send pacman/superpacman move request
+					nbytes=send_move(x_new,y_new,pacman_or_superpacman);
+
+				}
+				
+				free(pos);
+
             }
 
-            if(event.type==SDL_MOUSEMOTION){
+            /*if(event.type==SDL_MOUSEMOTION){
                 //Send info about pacman to server
 				
 				get_board_place(event.motion.x,event.motion.y,&x_new,&y_new);
@@ -99,7 +108,7 @@ int main(int argc , char* argv[]){
 					
 				}
 		
-            }
+            }*/
 
 			if(event.type==SDL_KEYDOWN){
 				if(event.key.keysym.sym==SDLK_LEFT){
