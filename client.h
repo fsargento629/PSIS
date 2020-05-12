@@ -26,3 +26,4 @@ void draw_object(game_object_struct object,int x,int y);
 int send_move(int x,int y,int type);
 int receive_game_state(game_state_struct* temp_game_state,int socket_fd);//
 int* char2color(char color);
+void print_score_board(int* score,int players);

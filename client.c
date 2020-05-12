@@ -273,3 +273,41 @@ int* char2color(char color){
     }
     
 }
+
+
+//order the score using bubble sort and print it
+void print_score_board(int* score,int size_score){
+
+    int i=0,j=0;
+    int aux;
+    int player_ids=calloc(size_score,sizeof(int));
+    
+    //order the score vector and save the changes in the player_ids vector
+    for(i=0;i<size_score;i++){
+        for(j=0;j<size_score-i;j++){
+            if(score[j+1]>score[j]){
+                //swap player ids
+                aux=player_ids[j+1];
+                player_ids[j+1]=player_ids[j];
+                player_ids[j]=aux;
+                //swap scores
+                aux=score[j+1];
+                score[j+1]=score[j];
+                score[j]=aux;
+            }
+        }
+    }
+
+
+
+    //now print it:
+    printf("---------------------\n");
+    printf("----Score board----\n");
+    for(i=0;i<size_score;i++){
+        if(score[i]<0)
+            break;
+        printf("%d)-> Player %d -> %d points\n ",i,player_ids[i],score[i]);
+    }
+    printf("---------------------\n");
+    free(player_ids);
+}
