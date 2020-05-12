@@ -92,7 +92,7 @@ int main(int argc , char* argv[]){
 				}
 				
 				free(pos);
-
+				print_score_board(new_game_state->scores,MAXPLAYERS);
             }
 
             /*if(event.type==SDL_MOUSEMOTION){
