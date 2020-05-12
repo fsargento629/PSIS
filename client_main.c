@@ -22,7 +22,7 @@ int main(int argc , char* argv[]){
 	SDL_Event event;
 	int done = 0;
 	int x,y,x_new,y_new;;
-	pthread_t sock_thread_ID;
+	pthread_t sock_thread_ID,score_thread_id;
 	Event_screen_refresh =  SDL_RegisterEvents(1);
 	game_state_struct* game_state,* new_game_state;
 	game_state=malloc(sizeof(game_state_struct));
@@ -43,11 +43,9 @@ int main(int argc , char* argv[]){
 	args.sock_fd=sock_fd;
 	args.Event_screen_refresh=Event_screen_refresh;
 	sock_thread_ID=pthread_create(&sock_thread_ID,NULL,sock_thread,&args);
-	printf("Created socket thread\n");
+	score_thread_id=pthread_create(&score_thread_id,NULL,receive_score_thread,argv[1]);
 	create_board_window(board_size[0],board_size[1]);
-	printf("Created board\n");
 	update_screen(NULL,game_state->board,1);//draw bricks
-	//printf_game_state(board_size[0],board_size[1],game_state);
 	int i=0;
 	int pacman_or_superpacman=PACMAN;
     while(!done){
@@ -92,23 +90,8 @@ int main(int argc , char* argv[]){
 				}
 				
 				free(pos);
-				print_score_board(new_game_state->scores,MAXPLAYERS);
             }
 
-            /*if(event.type==SDL_MOUSEMOTION){
-                //Send info about pacman to server
-				
-				get_board_place(event.motion.x,event.motion.y,&x_new,&y_new);
-				//if the mouse is different, send to server
-				if(x!=x_new || y!=y_new){
-					//printf("[[Move request]... ");
-					printf("x=%d|y=%d\n",x_new,y_new);
-					nbytes=send_move(x_new,y_new,pacman_or_superpacman);//send move request to server
-					//printf("Sent %d bytes to server\n",nbytes);
-					
-				}
-		
-            }*/
 
 			if(event.type==SDL_KEYDOWN){
 				if(event.key.keysym.sym==SDLK_LEFT){
@@ -116,7 +99,6 @@ int main(int argc , char* argv[]){
 					pos=find_object(player_id,MONSTER,game_state->board,board_size[0],board_size[1]);
 					if(pos[0]!=-1&&pos[1]!=-1)//not found
 						nbytes=send_move(pos[0]-1,pos[1],MONSTER);
-					printf("x_m=%d|y_m=%d\n",pos[0]-1,pos[1]);
 					free(pos);
 				}
 				if(event.key.keysym.sym==SDLK_RIGHT){
@@ -124,7 +106,6 @@ int main(int argc , char* argv[]){
 					pos=find_object(player_id,MONSTER,game_state->board,board_size[0],board_size[1]);
 					if(pos[0]!=-1&&pos[1]!=-1)//not found
 						nbytes=send_move(pos[0]+1,pos[1],MONSTER);
-					printf("x_m=%d|y_m=%d\n",pos[0]+1,pos[1]);
 					free(pos);
 				}
 				if(event.key.keysym.sym==SDLK_UP){
@@ -132,7 +113,6 @@ int main(int argc , char* argv[]){
 					pos=find_object(player_id,MONSTER,game_state->board,board_size[0],board_size[1]);
 					if(pos[0]!=-1&&pos[1]!=-1)//not found
 						nbytes=send_move(pos[0],pos[1]-1,MONSTER);
-					printf("x_m=%d|y_m=%d\n",pos[0],pos[1]-1);
 					free(pos);
 				}
 				if(event.key.keysym.sym==SDLK_DOWN){
@@ -140,7 +120,6 @@ int main(int argc , char* argv[]){
 					pos=find_object(player_id,MONSTER,game_state->board,board_size[0],board_size[1]);
 					if(pos[0]!=-1&&pos[1]!=-1)// found a match
 						nbytes=send_move(pos[0],pos[1]+1,MONSTER);
-					printf("x_m=%d|y_m=%d\n",pos[0],pos[1]+1);
 					free(pos);
 				}
 			}						

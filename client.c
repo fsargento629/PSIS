@@ -22,14 +22,7 @@ int receive_game_state(game_state_struct* game_state,int socket_fd){
         Nbytes=Nbytes+nbytes;
         
     }
-    //receive score
-    int scores[MAXPLAYERS];
-    nbytes=recv(sock_fd,scores,sizeof(scores),0);
-    Nbytes=Nbytes+nbytes;
-    //printf("[Receive game_state] Received %d bytes from server\n",Nbytes);//
-    for(i=0;i<MAXPLAYERS;i++)
-        game_state->scores[i]=scores[i];
-    //initial game state has been received
+    
     game_state->board=board;
     //printf("Exiting receive state\n");
    
@@ -185,7 +178,6 @@ void draw_object(game_object_struct object,int x, int y){
 
 
 int send_move(int x,int y,int type){
-    printf("Sending move to server\n");
     C2S_message msg;
     int nbytes;
     msg.x=x;
@@ -307,10 +299,46 @@ void print_score_board(int* score,int size_score){
     printf("---------------------\n");
     printf("----Score board----\n");
     for(i=0;i<size_score;i++){
-        if(score[i]<0)
+        if(score[i]==-1)
             break;
-        printf("%d)-> Player %d -> %d points\n ",i,player_ids[i],score[i]);
+        printf("%d)-> Player %d -> %d points\n",i+1,player_ids[i],score[i]);
     }
     printf("---------------------\n");
     free(player_ids);
+}
+
+//receives the score from the server and prints it
+void* receive_score_thread(void*arg){
+    char* server_ip= (char*)arg;
+    int score_socket;
+    int nbytes=0;
+    int* score=calloc(MAXPLAYERS,sizeof(int));
+    //setup score socket
+    struct sockaddr_in server_addr;
+    score_socket=socket(AF_INET,SOCK_STREAM,0);
+    if(score_socket==-1){
+        perror("socket: ");
+        exit(-1);}
+
+    server_addr.sin_family=AF_INET;
+    server_addr.sin_port=htons(DEFAULT_SCORE_SERVER_PORT);
+    inet_aton(server_ip, &server_addr.sin_addr);
+    if( -1 == connect(score_socket,
+			(const struct sockaddr *) &server_addr,
+			sizeof(server_addr))){
+				printf("Error connecting to server score socket\n");
+				exit(-1);
+	}
+
+
+    //loop receiving messages from the server and refreshing main thread 
+   do{
+        nbytes=recv(score_socket,score,MAXPLAYERS*sizeof(int),0);
+        printf("Score thread received %d bytes\n",nbytes);
+        print_score_board(score,MAXPLAYERS);
+        usleep(SCORE_THREAD_SLEEP*1000);
+    }while(nbytes>=0);   
+    printf("[Receive score thread]Server shut down. Closing client\n");
+    close(score_socket);
+
 }

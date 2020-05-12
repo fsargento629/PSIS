@@ -2,6 +2,7 @@
 #define MAXOBJECTS 100
 #define DEFAULT_SERVER_IP "192.168.5.66"
 #define DEFAULT_SERVER_PORT 3000
+#define DEFAULT_SCORE_SERVER_PORT 3001
 #define EMPTY 0
 #define PACMAN 1
 #define MONSTER 2
@@ -49,5 +50,4 @@ void closest_square(int x,int y,int* next_pos,int size_x,int size_y,game_object_
 int bounce_back(int* pos1,int* pos2,game_object_struct** board,int size_x,int size_y);
 void switch_places(int* pos,int* next_pos,game_object_struct** board);
 void eat(int* predator,int*prey,game_object_struct** board);
-
 double time_delta(struct timeval* tf,struct timeval* t0  );

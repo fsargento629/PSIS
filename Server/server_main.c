@@ -16,7 +16,8 @@ int main(int argc,char*argv[]){
     srand(time(0)); 
     player_connections = 0; 
     int i,nbytes;
-    pthread_t accept_thread_id,fruit_thread_id;
+    pthread_t accept_thread_id,fruit_thread_id,score_thread_id;
+    int maxplayers=MAXPLAYERS;
     printf("Program started\n");
 
 
@@ -27,7 +28,7 @@ int main(int argc,char*argv[]){
 
     board_data=read_board_data(BOARDTXT);
     printf("Board size: %d %d\n",board_data.board_size[0],board_data.board_size[1]);
-    int server_socket = init_server();
+    int server_socket = init_server(DEFAULT_SERVER_PORT);
 
     for(i=0;i<MAXPLAYERS;i++)
         client_fd_list[i]=0;
@@ -42,6 +43,13 @@ int main(int argc,char*argv[]){
     fruit_thread_arg.size_y=board_data.board_size[1];
     pthread_create(&fruit_thread_id,NULL,fruit_thread,&fruit_thread_arg);
 
+
+    //initialize score vector and call score thread
+    for(i=0;i<=maxplayers;i++)
+        game_state.scores[i]=-1;
+
+
+    pthread_create(&score_thread_id,NULL,accept_score_thread,&maxplayers);
     while(1){
         //update clients
         for(i=0;i<=MAXPLAYERS;i++){
@@ -51,7 +59,6 @@ int main(int argc,char*argv[]){
                 //printf("[Client updated] Sent %d bytes to client %d\n",nbytes,i);  
                 if(nbytes <= 0)
                 {
-                    printf("Ele fecha\n");
                     player_connections--;
                     //clear player
                     close(client_fd_list[i]);

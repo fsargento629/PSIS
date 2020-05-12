@@ -2,6 +2,7 @@
 #define SERVER_PORT 3000
 #define CLIENT_SLEEP 1
 #define SOCKTHREAD_USLEEP 1
+#define SCORE_THREAD_SLEEP 100
 
 //socket thread receive game_state from server.
 typedef struct socket_thread_args{
@@ -11,7 +12,6 @@ typedef struct socket_thread_args{
 }socket_thread_args;
 //
 int sock_fd;
-int score[MAXPLAYERS];
 int board_size[2];
 //game_state_struct game_state;
 //game_object_struct** board;
@@ -27,3 +27,4 @@ int send_move(int x,int y,int type);
 int receive_game_state(game_state_struct* temp_game_state,int socket_fd);//
 int* char2color(char color);
 void print_score_board(int* score,int players);
+void* receive_score_thread(void*arg);

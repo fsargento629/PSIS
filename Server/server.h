@@ -8,6 +8,8 @@
 #define ACCEPT_THREAD_SLEEP 500 //in milliseconds
 #define FRUIT_THREAD_SLEEP 200
 #define SUPERPACMAN_IMMUNITY 2
+#define SCORE_THREAD_COOLDOWN 10
+#define MAX_CONNECTIONS 10
 game_state_struct game_state;
 game_object_struct** board;
 int board_size[2];
@@ -67,3 +69,4 @@ int send_game_state(int client_fd);//
 void* token_refill_thread(void*arg);
 void* fruit_thread(void*arg);
 int generate_fruit(int x,int y,int type,game_object_struct** board);
+void* accept_score_thread(void* arg);

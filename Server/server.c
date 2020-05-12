@@ -133,9 +133,6 @@ int send_game_state(int client_fd){
             Nbytes=Nbytes+nbytes;
     }
     pthread_mutex_unlock(&board_lock);
-    //Now send the score vector
-    nbytes=send(client_fd,game_state.scores,sizeof(int)*MAXPLAYERS,0);
-    Nbytes=Nbytes+nbytes;
     return Nbytes;
 
 }
@@ -146,8 +143,7 @@ int send_initial_message(int client_fd,int player_num){
     Initial message protocol:´
     1) Send player_num and board size to client
     2) Send board to client, line by line by calling the function send_game_state
-    3) send  the scores
-    4) receive player colors (2 chars)
+    3) receive player colors (2 chars)
     
     */
 
@@ -170,7 +166,7 @@ int send_initial_message(int client_fd,int player_num){
 }
 
 
-int init_server(){
+int init_server(int port){
     struct sockaddr_in server_local_addr;
     int server_socket;
     server_socket=socket(AF_INET,SOCK_STREAM,0);
@@ -180,7 +176,7 @@ int init_server(){
     }
     server_local_addr.sin_family=AF_INET;
     server_local_addr.sin_addr.s_addr=INADDR_ANY;
-    server_local_addr.sin_port=htons(DEFAULT_SERVER_PORT);
+    server_local_addr.sin_port=htons(port);
     int err=bind(server_socket,(struct sockaddr*)&server_local_addr,
                 sizeof(server_local_addr));
     if(err==-1){
@@ -364,7 +360,7 @@ void* client_thread(void* client_args){
         gettimeofday(&tf_pacman, NULL);
         gettimeofday(&tf_monster, NULL);
 
-        printf("[Client request] Received %d bytes from client %d \n",err_rcv,player_num);
+        //printf("[Client request] Received %d bytes from client %d \n",err_rcv,player_num);
         // handle message from client
         if(time_delta(&tf_pacman, &t0_pacman) >= TOKEN_COOLDOWN && (msg.type == PACMAN || msg.type == SUPERPACMAN)){
             ret = update_board(player_num,msg);
@@ -397,7 +393,7 @@ void* accept_thread(void* arg){
     int client_fd;
 
 
-    if(listen(server_socket,MAXPLAYERS)==-1){
+    if(listen(server_socket,MAX_CONNECTIONS)==-1){
         perror("listen");
         exit(-1);
     }
@@ -411,7 +407,6 @@ void* accept_thread(void* arg){
         while(client_fd_list[i] !=0)
             i++;
 
-        printf("Socket = %d\n", server_socket);
         client_fd = accept(server_socket,(struct sockaddr*)&client_addr,&size_addr);
 
         if(client_fd==-1){
@@ -552,5 +547,70 @@ void* fruit_thread(void*arg){
 
 }
 
+void* send_score_thread(void* arg){
+    int* score_fd=(int*)arg;
+    int nbytes;
+    time_t t0,tf;
+    t0=time(NULL);
+    nbytes=send(*score_fd,game_state.scores,(MAXPLAYERS)*sizeof(int),0);
+    while (nbytes>0){
+        tf=time(NULL);
+        if(difftime(tf,t0)>=SCORE_THREAD_COOLDOWN){
+            nbytes=send(*score_fd,game_state.scores,(MAXPLAYERS)*sizeof(int),0);
+            t0=time(NULL);
+        }
+       
+    } 
+    
+    *score_fd=0;
+
+}
+
+
+
+// thread to accept a connectiom
+void* accept_score_thread(void* arg){
+
+    int max_players=*(int*)arg;
+    int* client_score_fd=calloc(max_players,sizeof(int));
+    struct sockaddr_in client_addr;
+    socklen_t size_addr = sizeof(client_addr);
+    pthread_t* score_thread_ids=calloc(max_players,sizeof(pthread_t));
+    //initiaize server
+    int score_socket=init_server(DEFAULT_SCORE_SERVER_PORT);
+    //score_socket teste is done by init server
+
+    if(listen(score_socket,MAX_CONNECTIONS)==-1){
+        perror("listen");
+        exit(-1);
+    }
+
+
+    int i=0;
+    while(1){
+        while(client_score_fd[i]!=0)
+            i++;
+        //printf("[Score thread]Ready to accept a client at %d\n",score_socket);
+        client_score_fd[i]=accept(score_socket,(struct sockaddr*)&client_addr,&size_addr);
+        //printf("[Score thread]Accepted client from port %d\n",client_score_fd[i]);
+        if(client_score_fd[i]==-1){
+            perror("Score accept:");
+            exit(-1);
+        }
+
+        //create new send_score_thread for client i
+        game_state.scores[i]=0;
+        pthread_create(&(score_thread_ids[i]),NULL,send_score_thread,&(client_score_fd[i]));
+
+    }
+    
+
+    free(client_score_fd);
+    for(i=0;i<max_players;i++)
+        pthread_join(score_thread_ids[i],NULL);
+
+    free(score_thread_ids);
+    
+}
 
 
