@@ -1,2 +1,2 @@
-server: server.c server_main.c common.c common.h
-	gcc -W -g server_main.c server.c common.c -pthread -o server 
+server: server_main.c server.h board_handling.h board_handling.c server_communication.c server_communication.h common.h common.c
+	gcc -W -g server_main.c server_communication.c board_handling.c  common.c -o server -pthread 

@@ -5,10 +5,14 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include"server.h"
 #include <sys/un.h>
 #include <signal.h>
 #include <unistd.h>
+#include "server.h"
+#include "board_handling.h"
+#include"common.h"
+#include"server_communication.h"
+#include "board_handling.h"
 
 
  
@@ -26,10 +30,9 @@ int main(int argc,char*argv[]){
     signal(SIGINT, signal_kill_handler);
 
 
-    board_data=read_board_data(BOARDTXT);
+    read_board_data(BOARDTXT);
     printf("Board size: %d %d\n",board_data.board_size[0],board_data.board_size[1]);
     int server_socket = init_server(DEFAULT_SERVER_PORT);
-
     for(i=0;i<MAXPLAYERS;i++)
         client_fd_list[i]=0;
 
@@ -45,8 +48,9 @@ int main(int argc,char*argv[]){
 
 
     //initialize score vector and call score thread
+    scores=calloc(maxplayers,sizeof(int));
     for(i=0;i<=maxplayers;i++)
-        game_state.scores[i]=-1;
+        scores[i]=-1;
 
 
     pthread_create(&score_thread_id,NULL,accept_score_thread,&maxplayers);

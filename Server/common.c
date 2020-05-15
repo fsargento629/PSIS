@@ -1,41 +1,26 @@
-    #include <sys/types.h>  
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include"server.h"
 #include <sys/un.h>
 #include <unistd.h>
-#include <sys/time.h>
+#include "common.h"
 
-
-
-
+// handles some signals, like SIGPIPE
 void signal_kill_handler( int signum){
     printf("Shutting down due to Ctrl-C signal\n");
     exit(0);
 }
-
+// used to process a disconnect
 void signal_callback_handler(int signum){
 }
 
-
-
+//returns if a board space is empty or not
 int is_empty(int x,int y,game_object_struct** board){
     if(board[y][x].type==0)
         return 1;
     return 0;
 }
-//this function empties a board cell
-void clear_board_cell(int x,int y,game_object_struct** board){
-    board[y][x].color=0;
-    board[y][x].player=0;
-    board[y][x].type=0;
-}
-
-//This function returns a 1x2 vector containing the position of the desired object 
+// returns a malloced 2D vector conatining the position of the desired object on the board
+// returns -1 if unsuccessfull
 int* find_object(int player,int type,game_object_struct** board,int size_x,int size_y){
     int x,y;
     int found=0;
@@ -72,164 +57,34 @@ int objects_are_different(game_object_struct obj1,game_object_struct obj2){
     return 0;
 }
 
-void printf_game_state(int size_x,int size_y,game_state_struct* game){
-
+//copies new_boad to old_board
+int board_copy(game_object_struct** old_board,game_object_struct** new_board,int size_x,int size_y){
     int x,y;
-    if(game==NULL){
-        printf("Game state is NULL\n");
-        exit(-1);
+    if(new_board==NULL)
+        return -1;
+    if(old_board==NULL){
+        printf("trololol\n");
+        old_board=malloc(sizeof(game_object_struct*)*size_y);
+        for(y=0;y<size_y;y++)
+            old_board[y]=malloc(sizeof(game_object_struct)*size_x);
     }
-    if(game->board==NULL){
-        printf("Board is NULL\n");
-        exit(-1);
-    }
-    printf("----- Printing game state ----\n");
+        
     for(y=0;y<size_y;y++){
         for(x=0;x<size_x;x++){
-            switch (game->board[y][x].type)
-            {
-            case EMPTY:
-                printf(" ");
-                break;
-            case BRICK:
-                 printf("B");
-                 break;
-            case PACMAN:
-                printf("P");
-                break;
-            case MONSTER:
-                printf("M");
-                break;
-            case CHERRY:
-                printf("C");
-                break;
-            case LEMON:
-                printf("L");
-                break;
-            default:
-                break;
-            }
+            old_board[y][x]=new_board[y][x];
         }
-        printf("\n");
     }
 
-    printf("----- Game state printed ----\n");
-
+    return 0;
 }
 
-// for a given begin point and end point, returns the first square on its path
-void closest_square(int x,int y,int* next_pos,int size_x,int size_y,game_object_struct** board){
-    int delta_x=next_pos[0]-x;
-    int delta_y=next_pos[1]-y;
-
-    
-
-    if(abs(delta_x)>abs(delta_y)){
-        if(delta_x<0)
-            next_pos[0]=x-1;
-        else
-            next_pos[0]=x+1;
-        next_pos[1]=y;
+//frees all the lines of board
+int free_board(game_object_struct** board,int size_x,int size_y){
+    game_object_struct* ptr;
+    int i;
+    for(i=0;i<size_y;i++){
+        ptr=board[i];
+        free(ptr);
     }
-    else if(abs(delta_x)<=abs(delta_y)){
-        next_pos[0]=x;
-        if(delta_y<0)
-            next_pos[1]=y-1;
-        else
-            next_pos[1]=y+1;
-    }
-
-    //make sure it fits in the window
-
-     if(next_pos[0]<0){
-        if(is_empty(1,next_pos[1],board))
-            next_pos[0]=1;
-        else
-            next_pos[0]=0;
-    }
-    else if(next_pos[0]>=size_x){
-        if(is_empty(size_x-2,next_pos[1],board))
-            next_pos[0]=size_x-2;
-        else
-            next_pos[0]=size_x-1;
-    }
-    else if(next_pos[1]<0){
-        if(is_empty(next_pos[0],1,board))
-            next_pos[1]=1;
-        else
-            next_pos[1]=0;
-    }
-    else if(next_pos[1]>=size_y){
-        if(is_empty(next_pos[0],size_y-2,board))
-            next_pos[1]=size_y-2;
-        else
-            next_pos[1]=size_y-1;
-    }
-
-
-
-}
-// bounce back game_object in pos1 if possible, otherwise dont change position (1 is the mover, 2 is the movement position)
-//returns the movement tokens used
-int bounce_back(int* pos1,int* pos2,game_object_struct** board,int size_x,int size_y){
-    int delta_pos[2],bounce_x,bounce_y;
-    
-    // delta pos vector
-    delta_pos[0]=pos2[0]-pos1[0];
-    delta_pos[1]=pos2[1]-pos1[1];
-    //create new point
-    bounce_x=pos1[0]-delta_pos[0];
-    bounce_y=pos1[1]-delta_pos[1];
-    //If bounce point is a possibility, bounce to it, otherwise, dont do it
-    if(bounce_x>=0&&bounce_x<size_x&&bounce_y>=0&&bounce_y<size_y){
-        pos2[0]=bounce_x;
-        pos2[1]=bounce_y;      
-        return 1; //used 1 movement token
-    }
-    else{ //stay put
-        pos2[0]=pos1[0];
-        pos2[1]=pos1[1];   
-        return 0; //used zero movement tokens  
-    }
-
-
-
-}
-
-//switch two objects in the board;
-void switch_places(int* pos,int* next_pos,game_object_struct** board){
-    int color, type;
-    int player;
-    //copy contents of game object in pos
-    color=board[pos[1]][pos[0]].color;
-    type=board[pos[1]][pos[0]].type;
-    player=board[pos[1]][pos[0]].player;
-    //change contents in pos to those of next_pos
-    board[pos[1]][pos[0]].color=board[next_pos[1]][next_pos[0]].color;
-    board[pos[1]][pos[0]].player=board[next_pos[1]][next_pos[0]].player;
-    board[pos[1]][pos[0]].type=board[next_pos[1]][next_pos[0]].type;
-    //copy the contents of pos to next pos
-    board[next_pos[1]][next_pos[0]].color=color;
-    board[next_pos[1]][next_pos[0]].player=player;
-    board[next_pos[1]][next_pos[0]].type=type;
-
-}
-
-//predator eats prey, prey gets deleted and predator moves to the space of prey
-void eat(int* predator,int*prey,game_object_struct** board){
-    // move the predator to the prey's spot
-    board[prey[1]][prey[0]].color=board[predator[1]][predator[0]].color;
-    board[prey[1]][prey[0]].player=board[predator[1]][predator[0]].player;
-    board[prey[1]][prey[0]].type=board[predator[1]][predator[0]].type;
-    //clear the predator spot
-    clear_board_cell(predator[0],predator[1],board);
-
-}
-
-
-//returns time_diff in seconds
-double time_delta(struct timeval* tf,struct timeval* t0  ){
-    double delta;
-    delta=(tf->tv_sec - t0->tv_sec)+((tf->tv_usec - t0->tv_usec)/1000.0/1000.0);
-    return delta;
+    return 0;
 }
