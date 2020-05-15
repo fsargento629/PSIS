@@ -182,6 +182,7 @@ int update_board(int player_num,C2S_message msg){
     else if(type1==PACMAN&&type2==MONSTER){
         aux_color=board[pos[1]][pos[0]].color;
         eat(next_pos,pos,board);
+        switch_places(next_pos,pos,board);
         scores[player2]++;
         init_player_position(player1,1,0,aux_color,0);//do only pacman
         ret=1;
@@ -199,6 +200,7 @@ int update_board(int player_num,C2S_message msg){
     else if(type1==MONSTER&&type2==SUPERPACMAN){
         aux_color=board[pos[1]][pos[0]].color;
         eat(next_pos,pos,board);
+        switch_places(next_pos,pos,board);
         scores[player2]++;
         init_player_position(player1,0,1,0,aux_color);//do only monster
         superpacman_tokens[player2]--;

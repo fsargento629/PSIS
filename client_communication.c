@@ -191,13 +191,14 @@ void print_score_board(int* score,int size_score){
     int i=0,j=0;
     int aux;
     int* player_ids=calloc(size_score,sizeof(int));
+
     //intiialize player_ids
     for(i=0;i<size_score;i++)
         player_ids[i]=i;
     
     //order the score vector and save the changes in the player_ids vector
     for(i=0;i<size_score;i++){
-        for(j=0;j<size_score-i;j++){
+        for(j=0;j<size_score-i-1;j++){
             if(score[j+1]>score[j]){
                 //swap player ids
                 aux=player_ids[j+1];

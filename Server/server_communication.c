@@ -228,7 +228,7 @@ void* accept_score_thread(void* arg){
     pthread_t* score_thread_ids=calloc(max_players,sizeof(pthread_t));
     //initiaize server
     int score_socket=init_server(DEFAULT_SCORE_SERVER_PORT);
-    //score_socket teste is done by init server
+    //score_socket test is done by init server
 
     if(listen(score_socket,MAX_CONNECTIONS)==-1){
         perror("listen");
@@ -240,9 +240,7 @@ void* accept_score_thread(void* arg){
     while(1){
         while(client_score_fd[i]!=0)
             i++;
-        //printf("[Score thread]Ready to accept a client at %d\n",score_socket);
         client_score_fd[i]=accept(score_socket,(struct sockaddr*)&client_addr,&size_addr);
-        //printf("[Score thread]Accepted client from port %d\n",client_score_fd[i]);
         if(client_score_fd[i]==-1){
             perror("Score accept:");
             exit(-1);
@@ -255,10 +253,10 @@ void* accept_score_thread(void* arg){
     }
     
 
-    free(client_score_fd);
+    
     for(i=0;i<max_players;i++)
         pthread_join(score_thread_ids[i],NULL);
-
+    free(client_score_fd);
     free(score_thread_ids);
     
 }
