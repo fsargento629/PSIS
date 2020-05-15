@@ -252,10 +252,10 @@ void* fruit_thread(void*arg){
     int size_y=args.size_y;
     int x,y,type;
     game_object_struct** board=args.board;
-    fruit_struct* fruit_vector=calloc(2*(MAXPLAYERS-1),sizeof(fruit_struct));
+    fruit_struct* fruit_vector=calloc(2*(maxplayers-1),sizeof(fruit_struct));
     int i,j;
     //initialize every position at -2, to signal empty;
-    for(i=0;i<2*(MAXPLAYERS-1);i++){
+    for(i=0;i<2*(maxplayers-1);i++){
         fruit_vector[i].x=NO_FRUIT;
         fruit_vector[i].y=NO_FRUIT;
     }
@@ -284,7 +284,7 @@ void* fruit_thread(void*arg){
 
           //see if any fruit is missing
         time(&tf);//save crurrent time in tf
-        for(i=0;i<2*(MAXPLAYERS-1);i++){
+        for(i=0;i<2*(maxplayers-1);i++){
 
             if(fruit_vector[i].x==NO_FRUIT)
                 continue;//-2 implies there is no fruit

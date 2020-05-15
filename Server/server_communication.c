@@ -152,7 +152,7 @@ void* accept_thread(void* arg){
     client_thread_args client_data;
     struct sockaddr_in client_addr;
     socklen_t size_addr = sizeof(client_addr);
-    pthread_t client_thread_ids[MAXPLAYERS];
+    pthread_t* client_thread_ids=calloc(maxplayers,sizeof(pthread_t));
     int client_fd;
 
 
@@ -178,7 +178,7 @@ void* accept_thread(void* arg){
         }
         
         //Checks if max number is reached
-        if(player_connections >= MAXPLAYERS)
+        if(player_connections >= maxplayers)
             client_data.success = 0;
         else{
             client_data.success = 1;
@@ -203,11 +203,11 @@ void* send_score_thread(void* arg){
     int nbytes;
     time_t t0,tf;
     t0=time(NULL);
-    nbytes=send(*score_fd,scores,(MAXPLAYERS)*sizeof(int),0);
+    nbytes=send(*score_fd,scores,(maxplayers)*sizeof(int),0);
     while (nbytes>0){
         tf=time(NULL);
         if(difftime(tf,t0)>=SCORE_THREAD_COOLDOWN){
-            nbytes=send(*score_fd,scores,(MAXPLAYERS)*sizeof(int),0);
+            nbytes=send(*score_fd,scores,(maxplayers)*sizeof(int),0);
             t0=time(NULL);
         }
        

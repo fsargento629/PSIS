@@ -12,4 +12,5 @@ int sock_fd;
 int board_size[2];
 int player_id;
 
+
 #endif

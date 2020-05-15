@@ -17,8 +17,9 @@ typedef struct board_data_struct
 
 game_object_struct** board; // board global variable
 int board_size[2];
-int client_fd_list[MAXPLAYERS];
-int superpacman_tokens[MAXPLAYERS];
+int maxplayers;
+int* client_fd_list;
+int* superpacman_tokens;
 int player_connections;
 pthread_mutex_t board_lock;
 board_data_struct board_data;

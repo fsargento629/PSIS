@@ -7,7 +7,7 @@
 #include "server.h"
 #include "common.h"
 
-#define MAX_CONNECTIONS 10
+#define MAX_CONNECTIONS 100
 #define SCORE_THREAD_COOLDOWN 10
 typedef struct client_thread_args
 {

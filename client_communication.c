@@ -153,7 +153,8 @@ void* receive_score_thread(void*arg){
     char* server_ip= (char*)arg;
     int score_socket;
     int nbytes=0;
-    int* score=calloc(MAXPLAYERS,sizeof(int));
+    const int max_players = board_size[0]*board_size[1];
+    int* score=calloc(max_players,sizeof(int));
     //setup score socket
     struct sockaddr_in server_addr;
     score_socket=socket(AF_INET,SOCK_STREAM,0);
@@ -174,12 +175,11 @@ void* receive_score_thread(void*arg){
 
     //loop receiving messages from the server and refreshing main thread 
    do{
-        nbytes=recv(score_socket,score,MAXPLAYERS*sizeof(int),0);
-        printf("Score thread received %d bytes\n",nbytes);
-        print_score_board(score,MAXPLAYERS);
+        nbytes=recv(score_socket,score,max_players*sizeof(int),0);
+        print_score_board(score,max_players);
         usleep(SCORE_THREAD_SLEEP*1000);
     }while(nbytes>=0);   
-    printf("[Receive score thread]Server shut down. Closing client\n");
+    printf("[Receive score thread] Server shut down. Closing client\n");
     close(score_socket);
 
 }

@@ -21,7 +21,8 @@ int main(int argc,char*argv[]){
     player_connections = 0; 
     int i,nbytes;
     pthread_t accept_thread_id,fruit_thread_id,score_thread_id;
-    int maxplayers=MAXPLAYERS;
+
+
     printf("Program started\n");
 
 
@@ -31,9 +32,12 @@ int main(int argc,char*argv[]){
 
 
     read_board_data(BOARDTXT);
+    maxplayers=board_size[0]*board_size[1];
+    client_fd_list=calloc(maxplayers,sizeof(int));
+    superpacman_tokens=calloc(maxplayers,sizeof(int));
     printf("Board size: %d %d\n",board_data.board_size[0],board_data.board_size[1]);
     int server_socket = init_server(DEFAULT_SERVER_PORT);
-    for(i=0;i<MAXPLAYERS;i++)
+    for(i=0;i<maxplayers;i++)
         client_fd_list[i]=0;
 
     pthread_mutex_init(&board_lock, NULL);//mutex to control board use
@@ -56,7 +60,7 @@ int main(int argc,char*argv[]){
     pthread_create(&score_thread_id,NULL,accept_score_thread,&maxplayers);
     while(1){
         //update clients
-        for(i=0;i<=MAXPLAYERS;i++){
+        for(i=0;i<=maxplayers;i++){
             if(client_fd_list[i]!=0){
                 
                 nbytes=send_game_state(client_fd_list[i]);

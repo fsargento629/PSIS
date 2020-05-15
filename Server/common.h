@@ -2,7 +2,7 @@
 #define COMMON_H
 
 // Defines used by both the client and server
-#define MAXPLAYERS 5 //remove
+
 #define MAXOBJECTS 100 //remove
 #define DEFAULT_SERVER_IP "192.168.5.66"
 #define DEFAULT_SERVER_PORT 3000
