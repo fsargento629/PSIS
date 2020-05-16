@@ -24,4 +24,5 @@ int update_clients();
 int send_game_state(int client_fd);
 void* accept_score_thread(void* arg);
 void* send_score_thread(void* arg);
+void disconnect(int player_id);
 #endif

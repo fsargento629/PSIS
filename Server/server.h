@@ -19,6 +19,7 @@ game_object_struct** board; // board global variable
 int board_size[2];
 int maxplayers;
 int* client_fd_list;
+int* client_score_fd;
 int* superpacman_tokens;
 int player_connections;
 pthread_mutex_t board_lock;

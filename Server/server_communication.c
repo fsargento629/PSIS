@@ -116,8 +116,8 @@ void* client_thread(void* client_args){
     gettimeofday(&t0_monster, NULL); 
 
 
-    while((err_rcv = recv(client_fd_list[player_num],&msg,sizeof(msg),0))>0){
-        
+    do{
+        err_rcv = recv(client_fd_list[player_num],&msg,sizeof(msg),0);
         gettimeofday(&tf_pacman, NULL);
         gettimeofday(&tf_monster, NULL);
 
@@ -141,14 +141,14 @@ void* client_thread(void* client_args){
             gettimeofday(&t0_pacman,NULL);
             gettimeofday(&t0_monster,NULL);
         }
-    }
+    }while(client_fd_list[player_num]!=0&&err_rcv>0);
+
 }
 
 
 //Thread that accepts new connections
 void* accept_thread(void* arg){ 
     int server_socket = *(int*)arg;
-
     client_thread_args client_data;
     struct sockaddr_in client_addr;
     socklen_t size_addr = sizeof(client_addr);
@@ -161,14 +161,11 @@ void* accept_thread(void* arg){
         exit(-1);
     }
     //printf("Waiting for connections\n");
-
+    
     while(1){
-        int i=0;
+        
 
         printf("[Accept thread] Ready to accept a new connection\n");
-
-        while(client_fd_list[i] !=0)
-            i++;
 
         client_fd = accept(server_socket,(struct sockaddr*)&client_addr,&size_addr);
 
@@ -184,7 +181,9 @@ void* accept_thread(void* arg){
             client_data.success = 1;
             player_connections++;
         }
-
+        int i=0;
+        while(client_fd_list[i] !=0)
+            i++;
         printf("Accepted new client (id=%d) from %d\n",i,client_fd);
   
         client_data.fd=client_fd;
@@ -204,7 +203,7 @@ void* send_score_thread(void* arg){
     time_t t0,tf;
     t0=time(NULL);
     nbytes=send(*score_fd,scores,(maxplayers)*sizeof(int),0);
-    while (nbytes>0){
+    while (nbytes>0&&*score_fd!=0){
         tf=time(NULL);
         if(difftime(tf,t0)>=SCORE_THREAD_COOLDOWN){
             nbytes=send(*score_fd,scores,(maxplayers)*sizeof(int),0);
@@ -213,7 +212,7 @@ void* send_score_thread(void* arg){
        
     } 
     
-    *score_fd=0;
+    
 
 }
 
@@ -222,7 +221,7 @@ void* send_score_thread(void* arg){
 void* accept_score_thread(void* arg){
 
     int max_players=*(int*)arg;
-    int* client_score_fd=calloc(max_players,sizeof(int));
+    client_score_fd=calloc(max_players,sizeof(int));
     struct sockaddr_in client_addr;
     socklen_t size_addr = sizeof(client_addr);
     pthread_t* score_thread_ids=calloc(max_players,sizeof(pthread_t));
@@ -238,14 +237,15 @@ void* accept_score_thread(void* arg){
 
     int i=0;
     while(1){
-        while(client_score_fd[i]!=0)
-            i++;
-        client_score_fd[i]=accept(score_socket,(struct sockaddr*)&client_addr,&size_addr);
-        if(client_score_fd[i]==-1){
+        int aux=accept(score_socket,(struct sockaddr*)&client_addr,&size_addr);
+        if(aux==-1){
             perror("Score accept:");
             exit(-1);
         }
-
+        i=0;
+        while(client_score_fd[i]!=0)
+            i++;
+        client_score_fd[i]=aux;
         //create new send_score_thread for client i
         scores[i]=0;
         pthread_create(&(score_thread_ids[i]),NULL,send_score_thread,&(client_score_fd[i]));
@@ -259,4 +259,27 @@ void* accept_score_thread(void* arg){
     free(client_score_fd);
     free(score_thread_ids);
     
+}
+
+
+//handles the disconnect protocol
+void disconnect(int player_id){
+    
+    client_fd_list[player_id]=0;
+    client_score_fd[player_id]=0;
+    scores[player_id]=-1;
+    player_connections--;
+
+    //clear player from board:
+    pthread_mutex_lock(&board_lock);
+    int x,y;
+    for(y=0;y<board_size[1];y++){
+        for(x=0;x<board_size[0];x++){
+            if(board[y][x].player==player_id){
+                clear_board_cell(x,y,board);
+            }
+        }
+    }
+    pthread_mutex_unlock(&board_lock);
+
 }
