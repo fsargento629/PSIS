@@ -266,7 +266,24 @@ void* fruit_thread(void*arg){
     time_t tf;
     while(1){
         usleep(FRUIT_THREAD_SLEEP*1000);
-        if(active_fruits<(2*(player_connections-1))){
+        if(player_connections==0){
+            //clear all fruits
+            for(i=0;i<2*(maxplayers-1);i++){
+                if(fruit_vector[i].x==NO_FRUIT)
+                    continue;
+                else if(fruit_vector[i].x==FRUIT_WAITING){
+                    fruit_vector[i].x=NO_FRUIT;
+                    fruit_vector[i].y=NO_FRUIT;
+                    
+                }
+                else if(fruit_vector[i].x!=NO_FRUIT){
+                    pthread_mutex_lock(&board_lock);
+                    clear_board_cell(fruit_vector[i].x,fruit_vector[i].y,board);
+                    pthread_mutex_unlock(&board_lock);
+                }
+            }
+        }
+        else if(active_fruits<(2*(player_connections-1))){
             type=rand()%2+CHERRY;//generates rand num between CHERRY and LEMON
             do
             {
