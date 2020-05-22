@@ -16,4 +16,5 @@ int send_move(int x,int y,int type);
 int receive_game_state(board_struct* new_board,int socket_fd);
 void print_score_board(int* score,int players);
 void* receive_score_thread(void*arg);
+int move_monster(SDL_Keycode keyode,game_object_struct** board);
 #endif 

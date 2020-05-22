@@ -94,37 +94,11 @@ int main(int argc , char* argv[]){
 
 
 			if(event.type==SDL_KEYDOWN){
-				if(event.key.keysym.sym==SDLK_LEFT){
-					//left key
-					pos=find_object(player_id,MONSTER,old_board->board,board_size[0],board_size[1]);
-					if(pos[0]!=-1&&pos[1]!=-1)//not found
-						nbytes=send_move(pos[0]-1,pos[1],MONSTER);
-					free(pos);
-				}
-				if(event.key.keysym.sym==SDLK_RIGHT){
-					//right key
-					pos=find_object(player_id,MONSTER,old_board->board,board_size[0],board_size[1]);
-					if(pos[0]!=-1&&pos[1]!=-1)//not found
-						nbytes=send_move(pos[0]+1,pos[1],MONSTER);
-					free(pos);
-				}
-				if(event.key.keysym.sym==SDLK_UP){
-					//up key
-					pos=find_object(player_id,MONSTER,old_board->board,board_size[0],board_size[1]);
-					if(pos[0]!=-1&&pos[1]!=-1)//not found
-						nbytes=send_move(pos[0],pos[1]-1,MONSTER);
-					free(pos);
-				}
-				if(event.key.keysym.sym==SDLK_DOWN){
-					//down key
-					pos=find_object(player_id,MONSTER,old_board->board,board_size[0],board_size[1]);
-					if(pos[0]!=-1&&pos[1]!=-1)// found a match
-						nbytes=send_move(pos[0],pos[1]+1,MONSTER);
-					free(pos);
-				}
+				move_monster(event.key.keysym.sym,old_board->board);
+				
 			}						
 		}
-    }
+	}
     printf("\n\nFim\n");
     exit(0);
 }

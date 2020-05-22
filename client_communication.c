@@ -225,3 +225,39 @@ void print_score_board(int* score,int size_score){
     printf("---------------------\n");
     free(player_ids);
 }
+
+
+
+//send monster request to server
+int move_monster(SDL_Keycode keycode,game_object_struct** board){
+    int nbytes;
+    int* pos = calloc(2,sizeof(int));
+    if(keycode==SDLK_LEFT){
+					//left key
+					pos=find_object(player_id,MONSTER,board,board_size[0],board_size[1]);
+					if(pos[0]!=-1&&pos[1]!=-1)//not found
+						nbytes=send_move(pos[0]-1,pos[1],MONSTER);
+					free(pos);
+				}
+				if(keycode==SDLK_RIGHT){
+					//right key
+					pos=find_object(player_id,MONSTER,board,board_size[0],board_size[1]);
+					if(pos[0]!=-1&&pos[1]!=-1)//not found
+						nbytes=send_move(pos[0]+1,pos[1],MONSTER);
+					free(pos);
+				}
+				if(keycode==SDLK_UP){
+					//up key
+					pos=find_object(player_id,MONSTER,board,board_size[0],board_size[1]);
+					if(pos[0]!=-1&&pos[1]!=-1)//not found
+						nbytes=send_move(pos[0],pos[1]-1,MONSTER);
+					free(pos);
+				}
+				if(keycode==SDLK_DOWN){
+					//down key
+					pos=find_object(player_id,MONSTER,board,board_size[0],board_size[1]);
+					if(pos[0]!=-1&&pos[1]!=-1)// found a match
+						nbytes=send_move(pos[0],pos[1]+1,MONSTER);
+					free(pos);
+				}
+}
