@@ -209,7 +209,7 @@ void* send_score_thread(void* arg){
             nbytes=send(*score_fd,scores,(maxplayers)*sizeof(int),0);
             t0=time(NULL);
         }
-       
+        usleep(10*1000);
     } 
     
     

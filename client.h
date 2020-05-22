@@ -5,7 +5,7 @@
 #define SERVER_PORT 3000
 #define CLIENT_SLEEP 1
 #define SOCKTHREAD_USLEEP 1
-#define SCORE_THREAD_SLEEP 100
+#define SCORE_THREAD_SLEEP 1000
 
 // client global vars
 int sock_fd;
