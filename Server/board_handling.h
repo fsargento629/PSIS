@@ -46,5 +46,5 @@ void switch_places(int* pos,int* next_pos,game_object_struct** board);
 void eat(int* predator,int*prey,game_object_struct** board);
 double time_delta(struct timeval* tf,struct timeval* t0  );
 void clear_board_cell(int x,int y,game_object_struct** board);
-
+void signal_kill_handler(int signum);
 #endif

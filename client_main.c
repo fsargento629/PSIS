@@ -14,7 +14,7 @@ int main(int argc , char* argv[]){
         printf("Program must be run as:\n./client <SERVER_IP> >SERVER_PORT> <pacman_color> <monster_color>\n");
         exit(-1);
     }
-    signal(SIGINT, signal_kill_handler);
+    signal(SIGINT, client_signal_kill_handler);
 	char pacman_color=*argv[3];
 	char monster_color=*argv[4];	
 	int *pos;

@@ -261,3 +261,8 @@ int move_monster(SDL_Keycode keycode,game_object_struct** board){
 					free(pos);
 				}
 }
+
+void client_signal_kill_handler(int signum){
+    printf("\nShutting down due to ctrl+C\n");
+    exit(0);
+}

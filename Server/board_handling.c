@@ -52,7 +52,7 @@ int init_player_position(int player_num,int do_pacman,int do_monster,int pacman_
 }
 
 //reads board file and creates a board matrix
-void read_board_data(char*file_name){
+void    read_board_data(char*file_name){
     int i_x,i_y;
     int x=0,y=0;
     char buff[500],ch;
@@ -67,14 +67,15 @@ void read_board_data(char*file_name){
     // read bricks:
     i_x=0;
     i_y=0;
-    board[i_y]=malloc(sizeof(game_object_struct)*x);
+    board[i_y]=(game_object_struct*)malloc(sizeof(game_object_struct)*x);
     while ((ch = fgetc(fp)) != EOF)
     {
         if(ch=='\n'){
             //printf("  (%d,%d)\n",i_x,i_y);
             i_x=0;;
             i_y++;;
-            board[i_y]=malloc(sizeof(game_object_struct)*x);
+            if(i_y<y)
+                board[i_y]=(game_object_struct*) malloc(sizeof(game_object_struct)*x);
                         
         }
         else if(ch=='B'){
@@ -481,4 +482,10 @@ double time_delta(struct timeval* tf,struct timeval* t0  ){
     double delta;
     delta=(tf->tv_sec - t0->tv_sec)+((tf->tv_usec - t0->tv_usec)/1000.0/1000.0);
     return delta;
+}
+
+void signal_kill_handler(int signum){
+    printf("\nShutting down due to Ctrl+C\n");
+    free_board(board,board_size[0],board_size[1]);
+    exit(0);
 }

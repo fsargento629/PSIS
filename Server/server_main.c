@@ -53,14 +53,14 @@ int main(int argc,char*argv[]){
 
     //initialize score vector and call score thread
     scores=calloc(maxplayers,sizeof(int));
-    for(i=0;i<=maxplayers;i++)
+    for(i=0;i<maxplayers;i++)
         scores[i]=-1;
 
 
     pthread_create(&score_thread_id,NULL,accept_score_thread,&maxplayers);
     while(1){
         //update clients
-        for(i=0;i<=maxplayers;i++){
+        for(i=0;i<maxplayers;i++){
             if(client_fd_list[i]!=0){
                 
                 nbytes=send_game_state(client_fd_list[i]);
