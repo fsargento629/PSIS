@@ -4,7 +4,7 @@
 
 
 void get_board_place(int mouse_x, int mouse_y, int * board_x, int *board_y);
-int create_board_window(int dim_x, int dim_y);
+SDL_Window* create_board_window(int dim_x, int dim_y);
 void close_board_windows();
 void paint_pacman(int  board_x, int board_y , int r, int g, int b);
 void paint_powerpacman(int  board_x, int board_y , int r, int g, int b);
