@@ -354,6 +354,7 @@ void* fruit_thread(void*arg){
 
       
     }
+    free(fruit_vector);
 
 }
 
