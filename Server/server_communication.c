@@ -7,6 +7,23 @@ int send_game_state(int client_fd){
     int i;
     //Send board, line by line:
     pthread_mutex_lock(&board_lock);
+
+        /*int x,y;
+        for(x=0; x<board_size[0]; x++){
+            for(y=0; y<board_size[1]; y++){
+                if(board[y][x].type == 0){
+                    printf(" ");
+                }
+                if(board[y][x].type == PACMAN){
+                    printf("P");
+                }
+                if(board[y][x].type == BRICK){
+                    printf("B");
+                }
+            }
+            printf("\n");
+        }*/
+
     for(i=0;i<board_size[1];i++){
             nbytes=send(client_fd,board[i],sizeof(game_object_struct)*board_size[0],0);
             if(nbytes<=0){
@@ -16,6 +33,7 @@ int send_game_state(int client_fd){
             Nbytes=Nbytes+nbytes;
     }
     pthread_mutex_unlock(&board_lock);
+    printf("ENVIOUS NBYTE = %d\n", Nbytes);
     return Nbytes;
 
 }

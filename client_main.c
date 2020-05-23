@@ -49,10 +49,12 @@ int main(int argc , char* argv[]){
 	score_thread_id=pthread_create(&score_thread_id,NULL,receive_score_thread,argv[1]);
 	window = create_board_window(board_size[0],board_size[1]);
 	update_screen(NULL,new_board->board,1);//draw bricks
-	old_board=new_board;
+	old_board = new_board;
+
 	int i=0;
 	int pacman_or_superpacman=PACMAN;
 	printf("Initiating main loop\n");
+
     while(!done){
 
         while (SDL_PollEvent(&event)) {
@@ -62,6 +64,7 @@ int main(int argc , char* argv[]){
 			}
             if(event.type==Event_screen_refresh && screen_ready==1){//server has sent a message
 				screen_ready=0;
+
 				new_board= event.user.data1;
 				pos=find_object(player_id,PACMAN,old_board->board,board_size[0],board_size[1]);
 				if(pos[0]==OBJECT_NOT_FOUND){//if cant find a pacman, it mjust be a superpacman
@@ -72,17 +75,13 @@ int main(int argc , char* argv[]){
 				{
 					pacman_or_superpacman=PACMAN;
 				}
-				
+
                 update_screen(old_board->board,new_board->board,0); 
-				//printf("Screen updated\n");    
-				
-				//free_board(old)
-				//printf("freed game_state\n");
+
 				free_board(old_board->board,board_size[0],board_size[1]);
 				free(old_board);
               	old_board=new_board;
-				free_board(new_board->board,board_size[0],board_size[1]);
-				free(new_board);
+				
 				screen_ready=1;
 				//send move to server, if pacman position is different than mouse position
 				SDL_GetMouseState(&x,&y);
@@ -97,13 +96,16 @@ int main(int argc , char* argv[]){
 				free(pos);
             }
 
-
+			
 			if(event.type==SDL_KEYDOWN){
 				move_monster(event.key.keysym.sym,old_board->board);
 				
 			}						
 		}
 	}
+
+	free_board(old_board->board,board_size[0],board_size[1]);
+	free(old_board);
     printf("\n\nFim\n");
     exit(0);
 }

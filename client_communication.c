@@ -4,7 +4,6 @@
 #include <pthread.h>
 #include<unistd.h>
 #include "client_communication.h"
-#include "client_communication.h"
 
 //receives the board from the server
 int receive_game_state(board_struct* new_board,int socket_fd){
@@ -116,7 +115,9 @@ void* sock_thread(void* args_pt){
 
     //loop receiving messages from the server and refreshing main thread 
     while(disconnect==0){
+        int success;
         usleep(SOCKTHREAD_USLEEP*1000);
+
         //printf("Entering receive_game_state\n");
         new_board=malloc(sizeof(board_struct));
         nbytes=receive_game_state(new_board,socket_fd);
@@ -131,8 +132,16 @@ void* sock_thread(void* args_pt){
         SDL_zero(new_event);
         new_event.type = arg->Event_screen_refresh;
         new_event.user.data1=new_board;
-        //printf("Sent event to main\n");
-        SDL_PushEvent(&new_event);
+
+
+        success = SDL_PushEvent(&new_event);
+        printf("success = %d\n",success);
+        if(success != 1)
+        {
+            free_board(new_board->board,board_size[0],board_size[1]);
+            free(new_board);
+        }
+        
     }    
 }
 
@@ -231,36 +240,39 @@ void print_score_board(int* score,int size_score){
 //send monster request to server
 int move_monster(SDL_Keycode keycode,game_object_struct** board){
     int nbytes;
-    int* pos = calloc(2,sizeof(int));
+    int* pos;
     if(keycode==SDLK_LEFT){
-					//left key
-					pos=find_object(player_id,MONSTER,board,board_size[0],board_size[1]);
-					if(pos[0]!=-1&&pos[1]!=-1)//not found
-						nbytes=send_move(pos[0]-1,pos[1],MONSTER);
-					free(pos);
-				}
-				if(keycode==SDLK_RIGHT){
-					//right key
-					pos=find_object(player_id,MONSTER,board,board_size[0],board_size[1]);
-					if(pos[0]!=-1&&pos[1]!=-1)//not found
-						nbytes=send_move(pos[0]+1,pos[1],MONSTER);
-					free(pos);
-				}
-				if(keycode==SDLK_UP){
-					//up key
-					pos=find_object(player_id,MONSTER,board,board_size[0],board_size[1]);
-					if(pos[0]!=-1&&pos[1]!=-1)//not found
-						nbytes=send_move(pos[0],pos[1]-1,MONSTER);
-					free(pos);
-				}
-				if(keycode==SDLK_DOWN){
-					//down key
-					pos=find_object(player_id,MONSTER,board,board_size[0],board_size[1]);
-					if(pos[0]!=-1&&pos[1]!=-1)// found a match
-						nbytes=send_move(pos[0],pos[1]+1,MONSTER);
-					free(pos);
-				}
-    free(pos);
+        //left key
+        pos = find_object(player_id, MONSTER, board, board_size[0], board_size[1]);
+        if (pos[0] != -1 && pos[1] != -1) //not found
+            nbytes = send_move(pos[0] - 1, pos[1], MONSTER);
+        free(pos);
+    }
+    else if (keycode == SDLK_RIGHT)
+    {
+        //right key
+        pos = find_object(player_id, MONSTER, board, board_size[0], board_size[1]);
+        if (pos[0] != -1 && pos[1] != -1) //not found
+            nbytes = send_move(pos[0] + 1, pos[1], MONSTER);
+        free(pos);
+    }
+    else if (keycode == SDLK_UP)
+    {
+        //up key
+        pos = find_object(player_id, MONSTER, board, board_size[0], board_size[1]);
+        if (pos[0] != -1 && pos[1] != -1) //not found
+            nbytes = send_move(pos[0], pos[1] - 1, MONSTER);
+        free(pos);
+    }
+    else if (keycode == SDLK_DOWN)
+    {
+        //down key
+        pos = find_object(player_id, MONSTER, board, board_size[0], board_size[1]);
+        if (pos[0] != -1 && pos[1] != -1) // found a match
+            nbytes = send_move(pos[0], pos[1] + 1, MONSTER);
+        free(pos);
+    }
+    return nbytes;
 }
 
 void client_signal_kill_handler(int signum){
