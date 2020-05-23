@@ -21,6 +21,7 @@ int main(int argc , char* argv[]){
 	int nbytes;
     Uint32 Event_screen_refresh;
 	SDL_Event event;
+	SDL_Window* window;
 	int done = 0;
 	int x,y,x_new,y_new;;
 	pthread_t sock_thread_ID,score_thread_id;
@@ -46,7 +47,7 @@ int main(int argc , char* argv[]){
 	args.Event_screen_refresh=Event_screen_refresh;
 	sock_thread_ID=pthread_create(&sock_thread_ID,NULL,sock_thread,&args);
 	score_thread_id=pthread_create(&score_thread_id,NULL,receive_score_thread,argv[1]);
-	create_board_window(board_size[0],board_size[1]);
+	window = create_board_window(board_size[0],board_size[1]);
 	update_screen(NULL,new_board->board,1);//draw bricks
 	old_board=new_board;
 	int i=0;
@@ -82,7 +83,7 @@ int main(int argc , char* argv[]){
 				//send move to server, if pacman position is different than mouse position
 				SDL_GetMouseState(&x,&y);
             	get_board_place(x, y, &x_new, &y_new);
-				if (x_new!=pos[0]||y_new!=pos[1])
+				if ((x_new!=pos[0]||y_new!=pos[1]) && isMouseOnWindow(window))
 				{
 					//send pacman/superpacman move request
 					nbytes=send_move(x_new,y_new,pacman_or_superpacman);

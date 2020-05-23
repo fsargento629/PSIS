@@ -119,3 +119,18 @@ int* char2color(char color){
     
 }
 
+int isMouseOnWindow(SDL_Window* window){
+//Retorna 1 se o rato estiver dentro do ecra, 0 se fora
+
+    int x,y;
+    int board_x,board_y;
+
+    SDL_GetWindowPosition(window,&board_x, &board_y);
+    SDL_GetGlobalMouseState(&x, &y);
+        
+    if( (x >= board_x && x<= board_x+25*board_size[0]) && (y >= board_y && y<= board_y+25*board_size[1])){
+       	return 1;
+       }else
+       	   return 0;
+
+}

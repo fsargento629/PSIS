@@ -18,7 +18,7 @@ SDL_Texture* lemon;
 SDL_Texture* brick;
 SDL_Texture* cherry;
 
-int create_board_window(int dim_x, int dim_y){
+SDL_Window* create_board_window(int dim_x, int dim_y){
 	col_width = 25;
 	n_cols = dim_x;
 	screen_width = dim_x *col_width +1;
@@ -151,7 +151,7 @@ if( loadedSurface == NULL ){
 
 
 
-	 return 0;
+	 return window;
 
  }
 
