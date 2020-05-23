@@ -78,7 +78,11 @@ int main(int argc , char* argv[]){
 				
 				//free_board(old)
 				//printf("freed game_state\n");
+				free_board(old_board->board,board_size[0],board_size[1]);
+				free(old_board);
               	old_board=new_board;
+				free_board(new_board->board,board_size[0],board_size[1]);
+				free(new_board);
 				screen_ready=1;
 				//send move to server, if pacman position is different than mouse position
 				SDL_GetMouseState(&x,&y);

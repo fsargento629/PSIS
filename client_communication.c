@@ -10,10 +10,10 @@
 int receive_game_state(board_struct* new_board,int socket_fd){
     int nbytes,Nbytes=0;
     int i=0;
-    game_object_struct** board=malloc(sizeof(game_object_struct*) * board_size[1]); 
+    game_object_struct** board=(game_object_struct**)malloc(sizeof(game_object_struct*) * board_size[1]); 
     //printf("[Setup] Receiving board from server\n");
     for(i=0;i<board_size[1];i++){
-        board[i] = malloc (sizeof(game_object_struct) * board_size[0]);
+        board[i] =(game_object_struct*) malloc (sizeof(game_object_struct) * board_size[0]);
         //receive line from server
         nbytes=recv(sock_fd,board[i],sizeof(game_object_struct) * board_size[0],0);
         Nbytes=Nbytes+nbytes;
@@ -181,7 +181,7 @@ void* receive_score_thread(void*arg){
     }while(nbytes>=0);   
     printf("[Receive score thread] Server shut down. Closing client\n");
     close(score_socket);
-
+    free(score);
 }
 
 
@@ -260,6 +260,7 @@ int move_monster(SDL_Keycode keycode,game_object_struct** board){
 						nbytes=send_move(pos[0],pos[1]+1,MONSTER);
 					free(pos);
 				}
+    free(pos);
 }
 
 void client_signal_kill_handler(int signum){
