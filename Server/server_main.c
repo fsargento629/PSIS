@@ -74,6 +74,7 @@ int main(int argc,char*argv[]){
                     disconnect(i);
                 }          
             }
+            
 
         }
         pthread_mutex_unlock(&board_lock);

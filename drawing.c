@@ -9,6 +9,7 @@ void update_screen(vector_struct old_vector,vector_struct new_vector){
     int* updated_cells=calloc(old_vector.size,sizeof(int));
     game_object_struct* draw_vector=calloc(new_vector.size,sizeof(game_object_struct));
     game_object_struct* clear_vector=calloc(old_vector.size,sizeof(game_object_struct));
+    
     /*Draw ALgorithm:
     1)For every new_vector cell, if position changed, add it to draw_vector, and add old position to clear_vector
         if position is the same, do nothing
@@ -16,6 +17,7 @@ void update_screen(vector_struct old_vector,vector_struct new_vector){
     2)For every position in the ol_vector that was not found in new vector, add to clear_vector
     3) For every cell in the clear vector, clear the screen
     4) For every cell in the draw vector, draw    */
+
     int clear_vector_id=0;
     int draw_vector_id=0;
     /*printf("-----\n");

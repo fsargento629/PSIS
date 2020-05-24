@@ -20,7 +20,7 @@
 
 //struct used for the board matrix
 typedef struct game_object_struct{
-    int type;// 0-> empty ;1->pacman;2->mosnter;3->brick;4->cherry;5->lemon;6->superpac
+    int type;// 0-> empty ;1->pacman;2->monster;3->brick;4->cherry;5->lemon;6->superpac
     char color;
     int x;
     int y;
