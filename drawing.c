@@ -69,7 +69,8 @@ void update_screen(vector_struct old_vector,vector_struct new_vector){
         draw_object(draw_vector[i],draw_vector[i].x,draw_vector[i].y);  
     }
 
-
+    free(draw_vector);
+    free(clear_vector);
 }
 
 
