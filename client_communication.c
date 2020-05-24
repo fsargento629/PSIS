@@ -144,7 +144,6 @@ void* sock_thread(void* args_pt){
 
 // Sends a move to the server
 int send_move(int x,int y,int type){
-    printf("Sending (%d,%d) %d\n",x,y,type);
     C2S_message msg;
     int nbytes;
     msg.x=x;

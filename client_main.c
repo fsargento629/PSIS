@@ -85,14 +85,12 @@ int main(int argc , char* argv[]){
 				//send move to server, if pacman position is different than mouse position
 				if(find_object_in_vector(old_vector,PACMAN,player_id,&pacman_x,&pacman_y)==0){//must be a superpacman, instead of a pacman
 					find_object_in_vector(old_vector,SUPERPACMAN,player_id,&pacman_x,&pacman_y);
-					printf("SUPERPACMAN\n");
 					pacman_or_superpacman=SUPERPACMAN;
 				}
 				else
 			
 				{
 						pacman_or_superpacman=PACMAN;
-						printf("PACMAN!\n");
 				}
 				
 				SDL_GetMouseState(&x,&y);
