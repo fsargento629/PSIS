@@ -20,8 +20,8 @@ int init_player_position(int player_num,int do_pacman,int do_monster,int pacman_
         //create pacman
         board[y][x].player=player_num;
         board[y][x].type=1;
-        board[y][x].pos[0]=x;
-        board[y][x].pos[1]=y;
+        board[y][x].x=x;
+        board[y][x].y=y;
         board[y][x].color=pacman_color;
         
         
@@ -41,8 +41,8 @@ int init_player_position(int player_num,int do_pacman,int do_monster,int pacman_
         //create monster
         board[y][x].player=player_num;
         board[y][x].type=2;
-        board[y][x].pos[0]=x;
-        board[y][x].pos[1]=y;
+        board[y][x].x=x;
+        board[y][x].y=y;
         board[y][x].color=monster_color;
     }
         
@@ -81,8 +81,8 @@ void    read_board_data(char*file_name){
         else if(ch=='B'){
             board[i_y][i_x].color=0;
             board[i_y][i_x].player=-1;
-            board[i_y][i_x].pos[0]=i_x;
-            board[i_y][i_x].pos[1]=i_y;
+            board[i_y][i_x].x=i_x;
+            board[i_y][i_x].y=i_y;
             board[i_y][i_x].type=3;//brick
             //printf("B");
             i_x++;
@@ -90,8 +90,8 @@ void    read_board_data(char*file_name){
         else{
             board[i_y][i_x].color=0;
             board[i_y][i_x].player=-1;
-            board[i_y][i_x].pos[0]=i_x;
-            board[i_y][i_x].pos[1]=i_y;
+            board[i_y][i_x].x=i_x;
+            board[i_y][i_x].y=i_y;
             board[i_y][i_x].type=0;//empty
             //printf("_");
             i_x++;
@@ -239,8 +239,8 @@ int generate_fruit(int x,int y,int type,game_object_struct** board){
     }
     else{
         board[y][x].player=-1;
-        board[y][x].pos[0]=x;   
-        board[y][x].pos[1]=y;
+        board[y][x].x=x;   
+        board[y][x].y=y;
         board[y][x].type=type;
         pthread_mutex_unlock(&board_lock);
         return 1;

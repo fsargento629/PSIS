@@ -17,39 +17,52 @@ int main(int argc , char* argv[]){
     signal(SIGINT, client_signal_kill_handler);
 	char pacman_color=*argv[3];
 	char monster_color=*argv[4];	
-	int *pos;
 	int nbytes;
     Uint32 Event_screen_refresh;
 	SDL_Event event;
 	SDL_Window* window;
 	int done = 0;
-	int x,y,x_new,y_new;;
+	int x,y,x_new,y_new;
+	int pacman_x,pacman_y;
+	int monster_x,monster_y;
+
 	pthread_t sock_thread_ID,score_thread_id;
 	Event_screen_refresh =  SDL_RegisterEvents(1);
-	board_struct* old_board,*new_board;
-	old_board=malloc(sizeof(board_struct));
-	new_board=malloc(sizeof(board_struct));
+
+	// object vectors
+	vector_struct old_vector;
+	old_vector.size=0;
+	old_vector.data=NULL;
+	vector_struct new_vector;
 	
     //setup of communication
-	nbytes=setup_comm(argv[1],argv[2],new_board,&pacman_color,&monster_color);
+	nbytes=setup_comm(argv[1],argv[2],&raw_board,&pacman_color,&monster_color);
+	
+
 
 	printf("[Setup] Read %d bytes from server on setup\n",nbytes);
 	printf("[Setup] Board size: %dx%d\n",board_size[0],board_size[1]);
+
+
 	if(nbytes==0){
 		printf("Server startup connection error\n");
 		exit(-1);
 	}
+
 	printf("Setup complete\n");
-    // Create socket thread 
+
+   
+	window = create_board_window(board_size[0],board_size[1]);
+	initial_draw(raw_board);
+
+	
+	 // Create socket thread 
 	socket_thread_args args;
-	int screen_ready=1;
 	args.sock_fd=sock_fd;
 	args.Event_screen_refresh=Event_screen_refresh;
 	sock_thread_ID=pthread_create(&sock_thread_ID,NULL,sock_thread,&args);
 	score_thread_id=pthread_create(&score_thread_id,NULL,receive_score_thread,argv[1]);
-	window = create_board_window(board_size[0],board_size[1]);
-	update_screen(NULL,new_board->board,1);//draw bricks
-	old_board = new_board;
+
 
 	int i=0;
 	int pacman_or_superpacman=PACMAN;
@@ -62,50 +75,46 @@ int main(int argc , char* argv[]){
 			if(event.type == SDL_QUIT) {
 					done = SDL_TRUE;
 			}
-            if(event.type==Event_screen_refresh && screen_ready==1){//server has sent a message
-				screen_ready=0;
+            if(event.type==Event_screen_refresh){//server has sent a message
+				new_vector=*(vector_struct*)event.user.data1;
+				update_screen(old_vector,new_vector);
+				free(old_vector.data);
+				old_vector=new_vector;				
 
-				new_board= event.user.data1;
-				pos=find_object(player_id,PACMAN,old_board->board,board_size[0],board_size[1]);
-				if(pos[0]==OBJECT_NOT_FOUND){//if cant find a pacman, it mjust be a superpacman
-					pos=find_object(player_id,SUPERPACMAN,old_board->board,board_size[0],board_size[1]);
+
+				//send move to server, if pacman position is different than mouse position
+				if(find_object_in_vector(old_vector,PACMAN,player_id,&pacman_x,&pacman_y)==0){//must be a superpacman, instead of a pacman
+					find_object_in_vector(old_vector,SUPERPACMAN,player_id,&pacman_x,&pacman_y);
+					printf("SUPERPACMAN\n");
 					pacman_or_superpacman=SUPERPACMAN;
 				}
 				else
+			
 				{
-					pacman_or_superpacman=PACMAN;
+						pacman_or_superpacman=PACMAN;
+						printf("PACMAN!\n");
 				}
-
-                update_screen(old_board->board,new_board->board,0); 
-
-				free_board(old_board->board,board_size[0],board_size[1]);
-				free(old_board);
-              	old_board=new_board;
 				
-				screen_ready=1;
-				//send move to server, if pacman position is different than mouse position
 				SDL_GetMouseState(&x,&y);
             	get_board_place(x, y, &x_new, &y_new);
-				if ((x_new!=pos[0]||y_new!=pos[1]) && isMouseOnWindow(window))
+				if ((x_new!=pacman_x||y_new!=pacman_y) && isMouseOnWindow(window))
 				{
 					//send pacman/superpacman move request
 					nbytes=send_move(x_new,y_new,pacman_or_superpacman);
 
 				}
 				
-				free(pos);
+				
             }
 
 			
 			if(event.type==SDL_KEYDOWN){
-				move_monster(event.key.keysym.sym,old_board->board);
+				move_monster(event.key.keysym.sym,old_vector);
 				
 			}						
 		}
 	}
 
-	free_board(old_board->board,board_size[0],board_size[1]);
-	free(old_board);
     printf("\n\nFim\n");
     exit(0);
 }

@@ -22,7 +22,8 @@
 typedef struct game_object_struct{
     int type;// 0-> empty ;1->pacman;2->mosnter;3->brick;4->cherry;5->lemon;6->superpac
     char color;
-    int pos[2];
+    int x;
+    int y;
     int player;
     
 }game_object_struct;
@@ -47,6 +48,11 @@ typedef struct board_struct
     int size_y;
 }board_struct;
 
+typedef struct vector_struct
+{
+   int size;
+   game_object_struct* data;
+}vector_struct;
 
 
 // Functions called by both the server and client
@@ -57,4 +63,5 @@ int* find_object(int player,int type,game_object_struct** board,int size_x,int s
 int objects_are_different(game_object_struct obj1,game_object_struct obj2);
 int board_copy(game_object_struct** old_board,game_object_struct** new_board,int size_x,int size_y);
 int free_board(game_object_struct** board,int size_x,int size_y);
+
 #endif

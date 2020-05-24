@@ -26,4 +26,5 @@ pthread_mutex_t board_lock;
 board_data_struct board_data;
 int*scores;
 
+
 #endif

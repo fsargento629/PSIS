@@ -60,19 +60,25 @@ int main(int argc,char*argv[]){
     pthread_create(&score_thread_id,NULL,accept_score_thread,&maxplayers);
     while(1){
         //update clients
+        vector_struct vector;
+        pthread_mutex_lock(&board_lock);
+        vector=board2vector();
+
         for(i=0;i<maxplayers;i++){
             if(client_fd_list[i]!=0){
-                
-                nbytes=send_game_state(client_fd_list[i]);
-                //printf("[Client updated] Sent %d bytes to client %d\n",nbytes,i);  
+                nbytes=send_game_state(client_fd_list[i],vector.data,vector.size);
+            
                 if(nbytes <= 0)
                 {//disconnect player
                     printf("Disconnecting player %d\n",i);
                     disconnect(i);
                 }          
             }
+
         }
+        pthread_mutex_unlock(&board_lock);
         usleep(10*1000);//x miliseconds
+        free(vector.data);
     }
 
     close(server_socket);

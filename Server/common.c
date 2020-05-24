@@ -53,7 +53,7 @@ int* find_object(int player,int type,game_object_struct** board,int size_x,int s
 
 // returns 1 if objs are different and zero if they are the same
 int objects_are_different(game_object_struct obj1,game_object_struct obj2){
-    if(obj1.type!=obj2.type ||obj1.color!=obj2.color ||obj1.player!=obj2.player||obj1.pos[0]!=obj2.pos[0]||obj1.pos[1]!=obj2.pos[1])
+    if(obj1.type!=obj2.type ||obj1.color!=obj2.color ||obj1.player!=obj2.player||obj1.x!=obj2.x||obj1.y!=obj2.y)
         return 1;
     return 0;
 }

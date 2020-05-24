@@ -4,9 +4,10 @@
 #include <pthread.h>
 #include<unistd.h>
 #include "client_communication.h"
+#include "drawing.h"
 
 //receives the board from the server
-int receive_game_state(board_struct* new_board,int socket_fd){
+int receive_initial_game_state(board_struct* new_board,int socket_fd){
     int nbytes,Nbytes=0;
     int i=0;
     game_object_struct** board=(game_object_struct**)malloc(sizeof(game_object_struct*) * board_size[1]); 
@@ -57,7 +58,7 @@ int setup_comm(char* server_ip,char* port,board_struct* new_board,char* pacman_c
 			exit(-1);
 		}
 
-	printf("connecting to %s on %d\n", server_ip, server_addr.sin_port );
+	printf("connecting to %s on %d\n", server_ip, server_addr.sin_port);
 
 	if(connect(sock_fd,(const struct sockaddr*)&server_addr,
                                     sizeof(server_addr))==-1){
@@ -96,7 +97,7 @@ int setup_comm(char* server_ip,char* port,board_struct* new_board,char* pacman_c
     board_size[0]=msg.board_size[0];
     board_size[1]=msg.board_size[1];
     // Now receiving state:
-    nbytes=receive_game_state(new_board,sock_fd);
+    nbytes=receive_initial_game_state(new_board,sock_fd);
     printf("[Setup] Received %d bytes from server (2/2)\n",nbytes);
     Nbytes=Nbytes+nbytes;
 
@@ -109,45 +110,41 @@ void* sock_thread(void* args_pt){
     socket_thread_args* arg= (socket_thread_args*)args_pt;
     int socket_fd=arg->sock_fd;
     int nbytes;
+    int vector_size=0;
+    game_object_struct* vector_data;
     SDL_Event new_event;
-    board_struct* new_board;
-    int disconnect=0;
-
+    vector_struct* vector;
     //loop receiving messages from the server and refreshing main thread 
-    while(disconnect==0){
-        int success;
+    while(1){
         usleep(SOCKTHREAD_USLEEP*1000);
-
         //printf("Entering receive_game_state\n");
-        new_board=malloc(sizeof(board_struct));
-        nbytes=receive_game_state(new_board,socket_fd);
-
+        
+        //first, receive the size of the msg
+        nbytes=recv(socket_fd,&vector_size,sizeof(int),0);
         if(nbytes <= 0)//disconnect
         {
             printf("Server shut down. Closing client\n");
             exit(0);
         }
-
+        //second, receive the vector
+        vector_data=calloc(vector_size,sizeof(game_object_struct));
+        nbytes=recv(socket_fd,vector_data,vector_size*sizeof(game_object_struct),0);
+        vector=malloc(sizeof(vector_struct));
+        vector->data=vector_data;
+        vector->size=vector_size;
         //printf("[Socket thread] Received %d bytes from server\n",nbytes);
         SDL_zero(new_event);
         new_event.type = arg->Event_screen_refresh;
-        new_event.user.data1=new_board;
+        new_event.user.data1=vector;  
 
-
-        success = SDL_PushEvent(&new_event);
-        printf("success = %d\n",success);
-        if(success != 1)
-        {
-            free_board(new_board->board,board_size[0],board_size[1]);
-            free(new_board);
-        }
-        
+        SDL_PushEvent(&new_event); 
     }    
 }
 
 
 // Sends a move to the server
 int send_move(int x,int y,int type){
+    printf("Sending (%d,%d) %d\n",x,y,type);
     C2S_message msg;
     int nbytes;
     msg.x=x;
@@ -238,39 +235,34 @@ void print_score_board(int* score,int size_score){
 
 
 //send monster request to server
-int move_monster(SDL_Keycode keycode,game_object_struct** board){
+int move_monster(SDL_Keycode keycode,vector_struct vector){
     int nbytes;
-    int* pos;
+    int x,y;
+    find_object_in_vector(vector,MONSTER,player_id,&x,&y);
     if(keycode==SDLK_LEFT){
         //left key
-        pos = find_object(player_id, MONSTER, board, board_size[0], board_size[1]);
-        if (pos[0] != -1 && pos[1] != -1) //not found
-            nbytes = send_move(pos[0] - 1, pos[1], MONSTER);
-        free(pos);
+        if (x != -1 && y != -1) //not found
+            nbytes = send_move(x - 1, y, MONSTER);
+        
     }
     else if (keycode == SDLK_RIGHT)
     {
         //right key
-        pos = find_object(player_id, MONSTER, board, board_size[0], board_size[1]);
-        if (pos[0] != -1 && pos[1] != -1) //not found
-            nbytes = send_move(pos[0] + 1, pos[1], MONSTER);
-        free(pos);
+        if (x != -1 && y != -1) //not found
+            nbytes = send_move(x + 1, y, MONSTER);
+        
     }
     else if (keycode == SDLK_UP)
     {
         //up key
-        pos = find_object(player_id, MONSTER, board, board_size[0], board_size[1]);
-        if (pos[0] != -1 && pos[1] != -1) //not found
-            nbytes = send_move(pos[0], pos[1] - 1, MONSTER);
-        free(pos);
+        if (x != -1 && y != -1) //not found
+            nbytes = send_move(x, y - 1, MONSTER);
     }
     else if (keycode == SDLK_DOWN)
     {
         //down key
-        pos = find_object(player_id, MONSTER, board, board_size[0], board_size[1]);
-        if (pos[0] != -1 && pos[1] != -1) // found a match
-            nbytes = send_move(pos[0], pos[1] + 1, MONSTER);
-        free(pos);
+        if (x != -1 && y != -1) // found a match
+            nbytes = send_move(x, y + 1, MONSTER);
     }
     return nbytes;
 }

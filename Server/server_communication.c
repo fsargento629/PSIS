@@ -2,38 +2,18 @@
 #include "board_handling.h"
 #include "server.h"
 // sends the board to a certain client
-int send_game_state(int client_fd){
+int send_game_state(int client_fd,game_object_struct* vector,int size){
     int nbytes,Nbytes=0;
     int i;
-    //Send board, line by line:
-    pthread_mutex_lock(&board_lock);
+    //Send message size
+    int msg_size=size;
+    nbytes=send(client_fd,&msg_size,sizeof(int),0);
+    Nbytes=nbytes;
 
-        /*int x,y;
-        for(x=0; x<board_size[0]; x++){
-            for(y=0; y<board_size[1]; y++){
-                if(board[y][x].type == 0){
-                    printf(" ");
-                }
-                if(board[y][x].type == PACMAN){
-                    printf("P");
-                }
-                if(board[y][x].type == BRICK){
-                    printf("B");
-                }
-            }
-            printf("\n");
-        }*/
-
-    for(i=0;i<board_size[1];i++){
-            nbytes=send(client_fd,board[i],sizeof(game_object_struct)*board_size[0],0);
-            if(nbytes<=0){
-                pthread_mutex_unlock(&board_lock);
-                return -1;
-            }
-            Nbytes=Nbytes+nbytes;
-    }
-    pthread_mutex_unlock(&board_lock);
-    printf("ENVIOUS NBYTE = %d\n", Nbytes);
+    //Now, send the vector
+    nbytes=send(client_fd,vector,size*sizeof(game_object_struct),0);
+    Nbytes=Nbytes+nbytes;
+   
     return Nbytes;
 
 }
@@ -58,8 +38,14 @@ int send_initial_message(int client_fd,int player_num){
     nbytes=send(client_fd,&msg,sizeof(setup_message),0);
     printf("[Client setup] Server sent %d bytes do client %d (1/2)\n",nbytes,player_num);
     Nbytes=Nbytes+nbytes;
-    //Send seconde part of the message:
-    nbytes=send_game_state(client_fd);
+    //Send seconde part of the message: board 
+    int i;
+    pthread_mutex_lock(&board_lock);
+    for(i=0;i<board_size[1];i++){
+        nbytes=send(client_fd,board[i],board_size[0]*sizeof(game_object_struct),0);
+        Nbytes=Nbytes+nbytes;
+    }
+    pthread_mutex_unlock(&board_lock);
     printf("[ClientSetup] Server sent %d bytes to client %d (2/2)\n ",nbytes,player_num);
     Nbytes=Nbytes+nbytes;
     printf("[ClientSetup] Server sent a total of %d bytes to client on startup\n",Nbytes);
@@ -289,7 +275,6 @@ void disconnect(int player_id){
     player_connections--;
 
     //clear player from board:
-    pthread_mutex_lock(&board_lock);
     int x,y;
     for(y=0;y<board_size[1];y++){
         for(x=0;x<board_size[0];x++){
@@ -298,6 +283,42 @@ void disconnect(int player_id){
             }
         }
     }
-    pthread_mutex_unlock(&board_lock);
 
+}
+
+
+// stores the moving elements in board to a vector and returns the size of he vector
+vector_struct board2vector(){
+    int x,y;
+    int size;
+    int i;
+    vector_struct vector;
+    game_object_struct* aux_vector= calloc(board_size[0]*board_size[1],sizeof(game_object_struct));
+    i=0;
+    for(y=0;y<board_size[1];y++){
+        for(x=0;x<board_size[0];x++){
+            if(board[y][x].type!=EMPTY && board[y][x].type!=BRICK ){
+                aux_vector[i]=board[y][x];
+                aux_vector[i].x=x;
+                aux_vector[i].y=y;//make sure that the position is correct
+                i++;
+            }
+        }
+    }
+    size=i;
+    vector.size=size;
+    if(size>0){
+        vector.data=(game_object_struct*) calloc(size,sizeof(game_object_struct));
+        for(i=0;i<size;i++){
+            vector.data[i]=aux_vector[i];
+        }
+    }
+    else
+    {
+        vector.data=NULL;
+    }
+    
+    free(aux_vector);
+    return vector;
+   
 }
