@@ -71,6 +71,7 @@ void update_screen(vector_struct old_vector,vector_struct new_vector){
 
     free(draw_vector);
     free(clear_vector);
+    free(updated_cells);
 }
 
 

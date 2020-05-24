@@ -76,7 +76,10 @@ int main(int argc , char* argv[]){
 					done = SDL_TRUE;
 			}
             if(event.type==Event_screen_refresh){//server has sent a message
-				new_vector=*(vector_struct*)event.user.data1;
+				vector_struct* aux_vector= event.user.data1;
+				new_vector=*aux_vector;
+				free(aux_vector);
+				
 				update_screen(old_vector,new_vector);
 				free(old_vector.data);
 				old_vector=new_vector;				
