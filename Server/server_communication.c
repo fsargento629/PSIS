@@ -322,3 +322,6 @@ vector_struct board2vector(){
     return vector;
    
 }
+
+void signal_callback_handler(int signum){
+}

@@ -56,12 +56,5 @@ typedef struct vector_struct
 
 
 // Functions called by both the server and client
-void signal_callback_handler(int signum);//
-void signal_kill_handler( int signum);//
-int is_empty(int x,int y,game_object_struct** board);
-int* find_object(int player,int type,game_object_struct** board,int size_x,int size_y);
-int objects_are_different(game_object_struct obj1,game_object_struct obj2);
-int board_copy(game_object_struct** old_board,game_object_struct** new_board,int size_x,int size_y);
-int free_board(game_object_struct** board,int size_x,int size_y);
-
+//void signal_kill_handler( int signum);//
 #endif

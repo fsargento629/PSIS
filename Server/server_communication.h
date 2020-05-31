@@ -25,5 +25,6 @@ int send_game_state(int client_fd,game_object_struct* vector,int size);
 void* accept_score_thread(void* arg);
 void* send_score_thread(void* arg);
 void disconnect(int player_id);
+void signal_callback_handler(int signum);//
 vector_struct board2vector();
 #endif
