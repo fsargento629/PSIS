@@ -536,27 +536,6 @@ int objects_are_different(game_object_struct obj1,game_object_struct obj2){
     return 0;
 }
 
-//copies new_boad to old_board
-int board_copy(game_object_struct** old_board,game_object_struct** new_board,int size_x,int size_y){
-    int x,y;
-    if(new_board==NULL)
-        return -1;
-    if(old_board==NULL){
-        printf("trololol\n");
-        old_board=malloc(sizeof(game_object_struct*)*size_y);
-        for(y=0;y<size_y;y++)
-            old_board[y]=malloc(sizeof(game_object_struct)*size_x);
-    }
-        
-    for(y=0;y<size_y;y++){
-        for(x=0;x<size_x;x++){
-            old_board[y][x]=new_board[y][x];
-        }
-    }
-
-    return 0;
-}
-
 //frees all the lines of board
 int free_board(game_object_struct** board,int size_x,int size_y){
     game_object_struct* ptr;

@@ -20,10 +20,6 @@ void update_screen(vector_struct old_vector,vector_struct new_vector){
 
     int clear_vector_id=0;
     int draw_vector_id=0;
-    /*printf("-----\n");
-    for(i=0;i<new_vector.size;i++)
-        printf("%d in (%d,%d)\n",new_vector.data[i].type,new_vector.data[i].x,new_vector.data[i].y);*/
-
     // pass 1 - Search moves and new additions in new_vector
     for(i=0;i<new_vector.size;i++){
         //search for entry in the old vector
