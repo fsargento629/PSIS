@@ -1,6 +1,7 @@
 #include "server_communication.h"
 #include "board_handling.h"
 #include "server.h"
+
 // sends the board to a certain client
 int send_game_state(int client_fd,game_object_struct* vector,int size){
     int nbytes,Nbytes=0;

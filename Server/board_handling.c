@@ -250,7 +250,7 @@ int generate_fruit(int x,int y,int type,game_object_struct** board){
 
 // handles all fruit (re)generation
 void* fruit_thread(void*arg){
-    fruit_thread_args args=*(fruit_thread_args*)arg;
+    board_struct args=*(board_struct*)arg;
     int size_x=args.size_x;
     int size_y=args.size_y;
     int x,y,type;

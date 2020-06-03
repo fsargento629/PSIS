@@ -9,19 +9,12 @@
 #define ACCEPT_THREAD_SLEEP 500 //in milliseconds
 #define FRUIT_THREAD_SLEEP 200
 #define SUPERPACMAN_IMMUNITY 2
-#define SCORE_THREAD_COOLDOWN 10
 #include "server.h"
 #include "common.h"
 #include "server_communication.h"
 
 
-// structs used only for board handling
-typedef struct fruit_thread_args
-{
-  int size_x;
-  int size_y;
-  game_object_struct** board;
-}fruit_thread_args;
+
 
 
 

@@ -7,8 +7,10 @@
 #include "server.h"
 #include "common.h"
 
-#define MAX_CONNECTIONS 100
-#define SCORE_THREAD_COOLDOWN 10
+#define MAX_CONNECTIONS 100 //size of the serve's socket buffer
+#define SCORE_THREAD_COOLDOWN 60 // time before each score send
+
+// struct to send arguments to client thread
 typedef struct client_thread_args
 {
    int player_num;

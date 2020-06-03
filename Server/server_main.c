@@ -46,11 +46,7 @@ int main(int argc,char*argv[]){
     pthread_create(&accept_thread_id,NULL,accept_thread,&server_socket); // create accept thread
 
     //create fruit thread
-    fruit_thread_args fruit_thread_arg;
-    fruit_thread_arg.board=board;
-    fruit_thread_arg.size_x=board_data.size_x;
-    fruit_thread_arg.size_y=board_data.size_y;
-    pthread_create(&fruit_thread_id,NULL,fruit_thread,&fruit_thread_arg);
+    pthread_create(&fruit_thread_id,NULL,fruit_thread,&board_data);
 
 
     //initialize score vector and call score thread
