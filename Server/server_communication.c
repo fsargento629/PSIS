@@ -25,8 +25,6 @@ int send_initial_message(int client_fd,int player_num){
     Initial message protocol:´
     1) Send player_num and board size to client
     2) Send board to client, line by line by calling the function send_game_state
-    3) receive player colors (2 chars)
-    
     */
 
     int nbytes,Nbytes=0;
