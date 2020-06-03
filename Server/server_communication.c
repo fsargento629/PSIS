@@ -39,12 +39,14 @@ int send_initial_message(int client_fd,int player_num){
     Nbytes=Nbytes+nbytes;
     //Send seconde part of the message: board 
     int i;
+
     pthread_mutex_lock(&board_lock);
     for(i=0;i<board_size[1];i++){
         nbytes=send(client_fd,board[i],board_size[0]*sizeof(game_object_struct),0);
         Nbytes=Nbytes+nbytes;
     }
     pthread_mutex_unlock(&board_lock);
+
     printf("[ClientSetup] Server sent %d bytes to client %d (2/2)\n ",nbytes,player_num);
     Nbytes=Nbytes+nbytes;
     printf("[ClientSetup] Server sent a total of %d bytes to client on startup\n",Nbytes);
@@ -52,7 +54,7 @@ int send_initial_message(int client_fd,int player_num){
     return Nbytes;
 }
 
-//initializes server at a given port
+//initializes server at a given port and returns its fd
 int init_server(int port){
     struct sockaddr_in server_local_addr;
     int server_socket;
@@ -71,7 +73,7 @@ int init_server(int port){
         exit(-1);
     }
 
-    // should we do the listen here? idont think so
+
     return server_socket;
 }
 
@@ -90,12 +92,13 @@ void* client_thread(void* client_args){
     char pacman_color,monster_color;
     int success;
     success = args.success;
+    // send success or fail info to the client
     send(client_fd,&success, sizeof(success),0);
 
     if(success == 0)
         return NULL;
 
-
+    // receive colors
     recv(client_fd,&pacman_color,sizeof(char),0);
     recv(client_fd,&monster_color,sizeof(char),0);
 
@@ -118,7 +121,7 @@ void* client_thread(void* client_args){
     gettimeofday(&t0_pacman, NULL);
     gettimeofday(&t0_monster, NULL); 
 
-
+    //move request recv loop
     do{
         err_rcv = recv(client_fd_list[player_num],&msg,sizeof(msg),0);
         gettimeofday(&tf_pacman, NULL);
