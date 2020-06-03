@@ -35,7 +35,7 @@ int main(int argc,char*argv[]){
     maxplayers=board_size[0]*board_size[1];
     client_fd_list=calloc(maxplayers,sizeof(int));
     superpacman_tokens=calloc(maxplayers,sizeof(int));
-    printf("Board size: %d %d\n",board_data.board_size[0],board_data.board_size[1]);
+    printf("Board size: %d %d\n",board_data.size_x,board_data.size_y);
     int server_socket = init_server(DEFAULT_SERVER_PORT);
     for(i=0;i<maxplayers;i++)
         client_fd_list[i]=0;
@@ -46,8 +46,8 @@ int main(int argc,char*argv[]){
     //create fruit thread
     fruit_thread_args fruit_thread_arg;
     fruit_thread_arg.board=board;
-    fruit_thread_arg.size_x=board_data.board_size[0];
-    fruit_thread_arg.size_y=board_data.board_size[1];
+    fruit_thread_arg.size_x=board_data.size_x;
+    fruit_thread_arg.size_y=board_data.size_y;
     pthread_create(&fruit_thread_id,NULL,fruit_thread,&fruit_thread_arg);
 
 

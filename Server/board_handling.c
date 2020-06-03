@@ -52,15 +52,15 @@ int init_player_position(int player_num,int do_pacman,int do_monster,int pacman_
 }
 
 //reads board file and creates a board matrix
-void    read_board_data(char*file_name){
+void read_board_data(char*file_name){
     int i_x,i_y;
     int x=0,y=0;
     char buff[500],ch;
     FILE* fp=fopen("board.txt","r");
     fgets(buff,sizeof(buff),fp);
     sscanf(buff,"%d %d",&x,&y);
-    board_data.board_size[0]=x;
-    board_data.board_size[1]=y;
+    board_data.size_x=x;
+    board_data.size_y=y;
     board_size[0]=x;
     board_size[1]=y;
     board=malloc(sizeof(game_object_struct*)*y);

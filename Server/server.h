@@ -7,11 +7,11 @@
 #include <unistd.h>
 #include <sys/time.h>
 
-typedef struct board_data_struct
+/*typedef struct board_data_struct
 {
    int board_size[2];
    game_object_struct** board;
-}board_data_struct;
+}board_data_struct;*/
 
 
 
@@ -23,7 +23,7 @@ int* client_score_fd;
 int* superpacman_tokens;
 int player_connections;
 pthread_mutex_t board_lock;
-board_data_struct board_data;
+board_struct board_data;
 int*scores;
 
 

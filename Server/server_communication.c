@@ -30,8 +30,8 @@ int send_initial_message(int client_fd,int player_num){
     int nbytes,Nbytes=0;
     setup_message msg;
     msg.player_num=player_num;
-    msg.board_size[0]=board_data.board_size[0];
-    msg.board_size[1]=board_data.board_size[1];
+    msg.board_size[0]=board_data.size_x;
+    msg.board_size[1]=board_data.size_y;
     // send 1st part of the initial message
     nbytes=send(client_fd,&msg,sizeof(setup_message),0);
     printf("[Client setup] Server sent %d bytes do client %d (1/2)\n",nbytes,player_num);
