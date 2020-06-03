@@ -31,7 +31,7 @@ fruit_struct;
 void read_board_data(char* file_name);//
 int update_board(int player,C2S_message msg);
 int init_player_position(int player_num,int do_pacman,int do_monster,int pacman_color,int monster_color);
-void* fruit_thread(void*arg);
+void* fruit_thread();
 int generate_fruit(int x,int y,int type,game_object_struct** board);
 void closest_square(int x,int y,int* next_pos,int size_x,int size_y,game_object_struct** board);
 int bounce_back(int* pos1,int* pos2,game_object_struct** board,int size_x,int size_y);

@@ -249,12 +249,11 @@ int generate_fruit(int x,int y,int type,game_object_struct** board){
 
 
 // handles all fruit (re)generation
-void* fruit_thread(void*arg){
-    board_struct args=*(board_struct*)arg;
-    int size_x=args.size_x;
-    int size_y=args.size_y;
+void* fruit_thread(){
+    int size_x=board_data.size_x;
+    int size_y=board_data.size_y;
     int x,y,type;
-    game_object_struct** board=args.board;
+    game_object_struct** board=board_data.board;
     fruit_struct* fruit_vector=calloc(2*(maxplayers-1),sizeof(fruit_struct));
     int i,j;
     //initialize every position at -2, to signal empty;
