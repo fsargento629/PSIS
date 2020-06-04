@@ -115,7 +115,8 @@ int main(int argc , char* argv[]){
 			}						
 		}
 	}
-
+	pthread_cancel(sock_thread_ID);
+	pthread_cancel(score_thread_id);
     printf("\n\nFim\n");
     exit(0);
 }
