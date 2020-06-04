@@ -118,6 +118,7 @@ int main(int argc , char* argv[]){
 	}
 	pthread_cancel(sock_thread_ID);
 	pthread_cancel(score_thread_id);
+	free(old_vector.data);
     printf("\n\nFim\n");
     exit(0);
 }
