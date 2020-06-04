@@ -14,6 +14,7 @@
 int sock_fd;
 int board_size[2];
 int player_id;
+int max_players;
 board_struct raw_board;
 game_object_struct** board;
 

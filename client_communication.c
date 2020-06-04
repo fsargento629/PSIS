@@ -96,6 +96,7 @@ int setup_comm(char* server_ip,char* port,board_struct* new_board,char* pacman_c
     player_id=msg.player_num;
     board_size[0]=msg.board_size[0];
     board_size[1]=msg.board_size[1];
+    max_players=msg.max_players;
     // Now receiving state:
     nbytes=receive_initial_game_state(new_board,sock_fd);
     printf("[Setup] Received %d bytes from server (2/2)\n",nbytes);
@@ -158,7 +159,6 @@ void* receive_score_thread(void*arg){
     char* server_ip= (char*)arg;
     int score_socket;
     int nbytes=0;
-    const int max_players = board_size[0]*board_size[1];
     int* score=calloc(max_players,sizeof(int));
     //setup score socket
     struct sockaddr_in server_addr;

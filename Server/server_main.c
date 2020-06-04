@@ -31,7 +31,6 @@ int main(int argc,char*argv[]){
 
     // read the board file and initiliaze variables with that data
     read_board_data(BOARDTXT);
-    maxplayers=board_size[0]*board_size[1];
     client_fd_list=calloc(maxplayers,sizeof(int));
     for(i=0;i<maxplayers;i++)
         client_fd_list[i]=0;

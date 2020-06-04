@@ -54,6 +54,7 @@ int init_player_position(int player_num,int do_pacman,int do_monster,int pacman_
 //reads board file and creates a board matrix
 void read_board_data(char*file_name){
     int i_x,i_y;
+    int bricks=0;
     int x=0,y=0;
     char buff[500],ch;
     FILE* fp=fopen("board.txt","r");
@@ -84,8 +85,8 @@ void read_board_data(char*file_name){
             board[i_y][i_x].x=i_x;
             board[i_y][i_x].y=i_y;
             board[i_y][i_x].type=3;//brick
-            //printf("B");
             i_x++;
+            bricks++;
         }
         else{
             board[i_y][i_x].color=0;
@@ -97,11 +98,11 @@ void read_board_data(char*file_name){
             i_x++;
         }
 
-        board_data.board=board;
-        
-           
+        board_data.board=board;   
 
     }
+    maxplayers=(board_size[0]*board_size[1]-bricks+2)/3;
+    printf("Max players is:%d\n",maxplayers);
     
 
 }

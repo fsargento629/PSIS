@@ -29,6 +29,7 @@ typedef struct game_object_struct{
 typedef struct setup_message{//to send to client on startup
     int board_size[2];
     int player_num;
+    int max_players;
 } setup_message;
 
 //struct used for the client-to-server messages
