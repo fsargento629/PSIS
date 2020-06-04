@@ -487,6 +487,7 @@ double time_delta(struct timeval* tf,struct timeval* t0  ){
 void signal_kill_handler(int signum){
     printf("\nShutting down due to Ctrl+C\n");
     free_board(board,board_size[0],board_size[1]);
+    
     exit(0);
 }
 
