@@ -98,12 +98,12 @@ void read_board_data(char*file_name){
             i_x++;
         }
 
-        board_data.board=board;   
+        
 
     }
     maxplayers=(board_size[0]*board_size[1]-bricks+2)/3;
     printf("Max players is:%d\n",maxplayers);
-    
+    board_data.board=board;   
 
 }
 /* 
