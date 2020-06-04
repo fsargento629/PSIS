@@ -36,6 +36,7 @@ int main(int argc , char* argv[]){
 	vector_struct new_vector;
 	
     //setup of communication
+	board_struct raw_board;//board without the players
 	nbytes=setup_comm(argv[1],argv[2],&raw_board,&pacman_color,&monster_color);
 	
 
