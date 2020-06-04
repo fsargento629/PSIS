@@ -246,6 +246,8 @@ void* accept_score_thread(void* arg){
     while(1){
         int aux=accept(score_socket,(struct sockaddr*)&client_addr,&size_addr);
         if(aux==-1){
+            free(client_score_fd);
+            free(score_thread_ids);
             perror("Score accept:");
             exit(-1);
         }
@@ -260,11 +262,6 @@ void* accept_score_thread(void* arg){
     }
     
 
-    
-    for(i=0;i<max_players;i++)
-        pthread_join(score_thread_ids[i],NULL);
-    free(client_score_fd);
-    free(score_thread_ids);
     
 }
 
