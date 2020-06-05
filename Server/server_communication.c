@@ -122,11 +122,20 @@ void* client_thread(void* client_args){
     gettimeofday(&t0_pacman, NULL);
     gettimeofday(&t0_monster, NULL); 
 
+
+    struct timeval tv;
+    tv.tv_sec = INACTIVITY_TIME;
+    setsockopt(client_fd_list[player_num], SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
     //move request recv loop
     do{
         err_rcv = recv(client_fd_list[player_num],&msg,sizeof(msg),0);
         gettimeofday(&tf_pacman, NULL);
         gettimeofday(&tf_monster, NULL);
+        if(err_rcv==-1){//inativity jump{
+            init_player_position(player_num,1,1,pacman_color,monster_color);
+            continue;
+        }
 
         // handle message from client
         if(time_delta(&tf_pacman, &t0_pacman) >= TOKEN_COOLDOWN && (msg.type == PACMAN || msg.type == SUPERPACMAN)){
@@ -140,14 +149,8 @@ void* client_thread(void* client_args){
             if(ret == 1)
                 gettimeofday(&t0_monster, NULL);
         }
-
-        if(time_delta(&tf_pacman,&t0_pacman)>=INACTIVITY_TIME&&time_delta(&tf_monster,&t0_monster)>=INACTIVITY_TIME){
-            init_player_position(player_num,1,1,pacman_color,monster_color);//make player jump to random position and delete previous positions
-            printf("Inactivity jump\n");
-            gettimeofday(&t0_pacman,NULL);
-            gettimeofday(&t0_monster,NULL);
-        }
-    }while(client_fd_list[player_num]!=0&&err_rcv>0);
+        
+    }while(client_fd_list[player_num]!=0&&err_rcv!=0);
 
 }
 
