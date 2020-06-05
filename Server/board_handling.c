@@ -58,6 +58,10 @@ void read_board_data(char*file_name){
     int x=0,y=0;
     char buff[500],ch;
     FILE* fp=fopen("board.txt","r");
+    if(fp==NULL){
+        printf("Incorrect .txt file\nShutting down\n");
+        exit(-1);
+    }
     fgets(buff,sizeof(buff),fp);
     sscanf(buff,"%d %d",&x,&y);
     board_data.size_x=x;
