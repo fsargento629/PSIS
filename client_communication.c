@@ -125,6 +125,7 @@ void* sock_thread(void* args_pt){
         if(nbytes <= 0)//disconnect
         {
             printf("Server shut down. Closing client\n");
+            close(sock_fd);
             exit(0);
         }
         //second, receive the vector

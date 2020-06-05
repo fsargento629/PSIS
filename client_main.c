@@ -38,17 +38,17 @@ int main(int argc , char* argv[]){
     //setup of communication
 	board_struct raw_board;//board without the players
 	nbytes=setup_comm(argv[1],argv[2],&raw_board,&pacman_color,&monster_color);
-	
+	if(nbytes==0){
+		printf("Server startup connection error\n");
+		exit(-1);
+	}
 
 
 	printf("[Setup] Read %d bytes from server on setup\n",nbytes);
 	printf("[Setup] Board size: %dx%d\n",board_size[0],board_size[1]);
 
 
-	if(nbytes==0){
-		printf("Server startup connection error\n");
-		exit(-1);
-	}
+	
 
 	printf("Setup complete\n");
 

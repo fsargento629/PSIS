@@ -3,7 +3,7 @@
 // Defines used only for board creationg and handling
 #define BOARDTXT "board.txt"
 #define TOKEN_COOLDOWN 0.5
-#define INACTIVITY_TIME 60 
+#define INACTIVITY_TIME 30
 #define NO_FRUIT -2
 #define FRUIT_WAITING -1
 #define ACCEPT_THREAD_SLEEP 500 //in milliseconds

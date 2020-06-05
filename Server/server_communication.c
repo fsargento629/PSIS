@@ -128,7 +128,6 @@ void* client_thread(void* client_args){
         gettimeofday(&tf_pacman, NULL);
         gettimeofday(&tf_monster, NULL);
 
-        //printf("[Client request] Received %d bytes from client %d \n",err_rcv,player_num);
         // handle message from client
         if(time_delta(&tf_pacman, &t0_pacman) >= TOKEN_COOLDOWN && (msg.type == PACMAN || msg.type == SUPERPACMAN)){
             ret = update_board(player_num,msg);
